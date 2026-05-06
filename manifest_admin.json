@@ -1,0 +1,25 @@
+{
+  "name": "가나디 쿠폰샵 관리자",
+  "short_name": "관리자",
+  "description": "가나디 쿠폰샵 - 관리자",
+  "start_url": "./ganadi_coupon_admin.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c0a09",
+  "theme_color": "#0c0a09",
+  "icons": [
+    {
+      "src": "./icon_admin_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon_admin_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
