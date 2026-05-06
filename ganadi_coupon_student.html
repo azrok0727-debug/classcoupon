@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>가나디 쿠폰샵</title>
+<style>
+:root{
+  --bg:#0a1628;
+  --bg2:#0f1d36;
+  --surface:#152544;
+  --surface2:#1c2f54;
+  --border:rgba(255,255,255,0.08);
+  --text1:#ffffff;
+  --text2:rgba(255,255,255,0.65);
+  --text3:rgba(255,255,255,0.4);
+  --accent:#3b82f6;
+  --accent2:#60a5fa;
+  --gold:#fbbf24;
+  --danger:#ef4444;
+  --success:#10b981;
+  --radius:12px;
+  --radius-lg:20px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text1);font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;}
+body{min-height:100vh;padding-bottom:90px;}
+button{font-family:inherit;cursor:pointer;}
+input{font-family:inherit;}
+
+/* Header */
+.header{padding:18px 20px 8px;display:flex;justify-content:space-between;align-items:center;}
+.header-left{display:flex;align-items:center;gap:10px;}
+.logo{width:36px;height:36px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;}
+.brand-sub{font-size:10px;color:var(--text3);letter-spacing:1.5px;font-weight:600;}
+.brand-name{font-size:15px;font-weight:800;}
+.user-chip{background:var(--surface);padding:8px 12px;border-radius:20px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;border:1px solid var(--border);}
+.logout-btn{background:transparent;border:none;color:var(--text3);font-size:11px;padding:0;}
+
+/* Account Card */
+.account-section{padding:12px 20px 0;}
+.account-card{background:linear-gradient(135deg,#1a2f6e 0%,#2a4fa8 50%,#1e3a8a 100%);border-radius:var(--radius-lg);padding:22px;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.4);}
+.account-card::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.04);}
+.account-card::after{content:'';position:absolute;bottom:-60px;left:-30px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.03);}
+.acc-label{font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:6px;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;position:relative;z-index:1;}
+.acc-balance{font-size:32px;font-weight:900;color:white;letter-spacing:-1px;line-height:1;position:relative;z-index:1;}
+.acc-balance span{font-size:15px;font-weight:600;opacity:.7;margin-left:4px;}
+.acc-link{font-size:11px;color:rgba(255,255,255,0.5);margin-top:8px;position:relative;z-index:1;}
+
+/* Tabs Content */
+.content{padding:20px;}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.section-title{font-size:18px;font-weight:800;margin:0;}
+.section-count{font-size:12px;color:var(--text3);}
+
+/* Product Grid */
+.product-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.product-card{background:var(--surface);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);}
+.product-img{aspect-ratio:1;background:linear-gradient(135deg,var(--surface2),#243966);display:flex;align-items:center;justify-content:center;font-size:60px;position:relative;}
+.product-badge{position:absolute;top:8px;right:8px;background:var(--danger);color:#fff;font-size:9px;padding:3px 8px;border-radius:8px;font-weight:700;letter-spacing:0.3px;}
+.product-resell-badge{position:absolute;top:8px;left:8px;background:var(--gold);color:#78350f;font-size:9px;padding:3px 7px;border-radius:8px;font-weight:800;letter-spacing:0.5px;}
+.product-own-badge{position:absolute;top:8px;right:8px;background:#0a1628;color:#fff;font-size:9px;padding:3px 7px;border-radius:8px;font-weight:700;}
+.product-soldout{position:absolute;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;}
+.product-info{padding:12px;}
+.product-name{font-size:13px;font-weight:700;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.product-seller{font-size:10px;color:var(--text3);margin-bottom:4px;}
+.product-price{font-size:15px;font-weight:800;color:var(--accent2);margin-bottom:10px;}
+.product-price.resell{color:var(--gold);}
+.btn{width:100%;padding:9px;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;}
+.btn-primary{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;}
+.btn-primary:active{transform:scale(0.97);}
+.btn-disabled{background:#243966;color:var(--text3);cursor:not-allowed;}
+.btn-sell{background:rgba(251,191,36,0.15);color:var(--gold);margin-top:6px;}
+.btn-sell:active{transform:scale(0.97);}
+
+/* Coupon List */
+.coupon-list{display:flex;flex-direction:column;gap:10px;}
+.coupon-item{background:var(--surface);border-radius:var(--radius-lg);padding:14px;display:flex;align-items:center;gap:14px;border:1px solid var(--border);position:relative;overflow:hidden;}
+.coupon-img{width:64px;height:64px;background:linear-gradient(135deg,var(--surface2),#243966);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;}
+.coupon-info{flex:1;min-width:0;}
+.coupon-name{font-size:14px;font-weight:700;margin-bottom:2px;}
+.coupon-meta{font-size:11px;color:var(--text3);margin-bottom:8px;}
+.coupon-actions{display:flex;gap:6px;}
+.btn-small{padding:6px 12px;font-size:11px;font-weight:700;border:none;border-radius:6px;cursor:pointer;}
+.btn-small-sell{background:rgba(251,191,36,0.15);color:var(--gold);}
+.btn-small-use{background:rgba(16,185,129,0.15);color:var(--success);}
+.gifted-mark{display:inline-block;background:rgba(251,191,36,0.2);color:var(--gold);font-size:9px;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:700;}
+
+/* Empty */
+.empty{background:var(--surface);border-radius:var(--radius-lg);padding:60px 20px;text-align:center;border:1px solid var(--border);}
+.empty-icon{font-size:44px;margin-bottom:10px;opacity:0.5;}
+.empty-text{font-size:13px;color:var(--text3);}
+
+/* Bottom Tabs */
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:rgba(15,29,54,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 12px;z-index:50;}
+.tab{flex:1;background:none;border:none;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text3);}
+.tab.active{color:var(--accent2);}
+.tab-icon{font-size:20px;}
+.tab-label{font-size:11px;font-weight:600;}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center;z-index:100;}
+.modal-overlay.show{display:flex;animation:fadeIn 0.2s;}
+.modal-panel{background:var(--bg2);border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:28px 22px 32px;animation:slideUp 0.25s ease;border-top:1px solid var(--border);}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
+.modal-title{font-size:18px;font-weight:800;margin:0 0 8px;}
+.modal-text{font-size:13px;color:var(--text2);margin:0 0 20px;line-height:1.6;white-space:pre-line;}
+.modal-actions{display:flex;gap:8px;}
+.modal-btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;}
+.modal-btn-cancel{background:var(--surface);color:var(--text2);}
+.modal-btn-confirm{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;}
+
+.field{margin-bottom:14px;}
+.field-label{font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px;}
+.field-input{width:100%;padding:13px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:14px;color:var(--text1);outline:none;}
+.field-input:focus{border-color:var(--accent);}
+.sell-preview{background:var(--surface);border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.sell-preview-img{width:52px;height:52px;background:var(--surface2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;}
+
+/* Login */
+.login-container{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.login-card{background:var(--surface);border-radius:24px;padding:30px 24px;width:100%;max-width:420px;border:1px solid var(--border);}
+.login-logo{width:60px;height:60px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:16px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:#fff;}
+.login-title{font-size:22px;font-weight:800;text-align:center;margin:0 0 6px;}
+.login-sub{font-size:13px;color:var(--text3);text-align:center;margin:0 0 22px;}
+.group-section{margin-bottom:14px;}
+.group-label{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:0.5px;margin-bottom:6px;padding-left:4px;}
+.student-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;}
+.student-btn{padding:11px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text1);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+.student-btn:active{background:var(--accent);border-color:var(--accent);transform:scale(0.97);}
+
+/* Toast */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:var(--surface);color:#fff;padding:12px 22px;border-radius:12px;font-size:13px;font-weight:600;border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:200;transition:transform 0.3s;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.error{background:#7f1d1d;border-color:#dc2626;}
+.toast.success{background:#064e3b;border-color:#10b981;}
+
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes slideUp{from{transform:translateY(30px);}to{transform:translateY(0);}}
+
+/* Loading */
+.loading{display:flex;align-items:center;justify-content:center;min-height:100vh;color:var(--text2);font-size:14px;}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<div class="modal-overlay" id="main-modal">
+  <div class="modal-panel" id="modal-inner"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, runTransaction, update, get, push, set, remove }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB = {
+  apiKey:"AIzaSyDEGBu8sFChEdtnQEEC1FFZaAIwUr9fWpc",
+  authDomain:"stock-c985f.firebaseapp.com",
+  databaseURL:"https://stock-c985f-default-rtdb.firebaseio.com",
+  projectId:"stock-c985f",
+  storageBucket:"stock-c985f.firebasestorage.app",
+  messagingSenderId:"1082843629086",
+  appId:"1:1082843629086:web:58c6b2ca396cb7842d100f"
+};
+const db = getDatabase(initializeApp(FB));
+
+const GROUPS = [
+  {id:1,name:'1모둠',members:['주시연','김지성','신재은','서은수']},
+  {id:2,name:'2모둠',members:['강민채','권용민','이다영','김준우']},
+  {id:3,name:'3모둠',members:['박준서','조혜원','김주이','윤지환']},
+  {id:4,name:'4모둠',members:['최효민','정서윤','이세은','이강민']},
+  {id:5,name:'5모둠',members:['김지원','임승언','이서준','김수현','이윤아']},
+  {id:6,name:'6모둠',members:['이주호','민나진','최상윤','황세현','이수빈']},
+];
+const ALL_STUDENTS = GROUPS.flatMap(g=>g.members.map(m=>({name:m,group:g.id})));
+
+let currentUser = localStorage.getItem('ganadi_coupon_user') || null;
+let activeTab = 'shop';
+let fbState = null;
+
+const fmt = n => Number(n||0).toLocaleString('ko-KR');
+const dep = name => fbState?.students?.[name]?.deposit ?? 0;
+
+const $app = document.getElementById('app');
+const $modal = document.getElementById('main-modal');
+const $modalInner = document.getElementById('modal-inner');
+const $toast = document.getElementById('toast');
+
+function showToast(msg, type=''){
+  $toast.textContent = msg;
+  $toast.className = 'toast show ' + type;
+  setTimeout(()=>$toast.classList.remove('show'), 2400);
+}
+
+function showModal(html){
+  $modalInner.innerHTML = html;
+  $modal.classList.add('show');
+}
+function closeModal(){ $modal.classList.remove('show'); }
+$modal.addEventListener('click', e=>{ if(e.target===$modal) closeModal(); });
+
+// Subscribe to entire state
+onValue(ref(db,'state'), snap=>{
+  fbState = snap.val() || {};
+  if(!fbState.students) fbState.students = {};
+  if(!fbState.couponShop) fbState.couponShop = { products:{}, resell:{} };
+  if(!fbState.couponShop.products) fbState.couponShop.products = {};
+  if(!fbState.couponShop.resell) fbState.couponShop.resell = {};
+  render();
+});
+
+function render(){
+  if(!fbState){
+    $app.innerHTML = `<div class="loading"><div style="text-align:center"><div class="spinner"></div>가나디 서버 연결 중...</div></div>`;
+    return;
+  }
+  if(!currentUser || !ALL_STUDENTS.find(s=>s.name===currentUser)){
+    renderLogin();
+    return;
+  }
+  renderMain();
+}
+
+function renderLogin(){
+  const groupHtml = GROUPS.map(g=>`
+    <div class="group-section">
+      <div class="group-label">${g.name}</div>
+      <div class="student-grid">
+        ${g.members.map(m=>`<button class="student-btn" data-name="${m}">${m}</button>`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  $app.innerHTML = `
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-logo">가</div>
+        <h1 class="login-title">가나디 쿠폰샵</h1>
+        <p class="login-sub">학생을 선택해 로그인하세요</p>
+        ${groupHtml}
+      </div>
+    </div>
+  `;
+  $app.querySelectorAll('.student-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      currentUser = btn.dataset.name;
+      localStorage.setItem('ganadi_coupon_user', currentUser);
+      render();
+    });
+  });
+}
+
+function renderMain(){
+  const balance = dep(currentUser);
+  $app.innerHTML = `
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">가</div>
+        <div>
+          <div class="brand-sub">GANADI COUPON SHOP</div>
+          <div class="brand-name">${currentUser}님</div>
+        </div>
+      </div>
+      <button class="user-chip logout-btn" id="logout-btn">로그아웃</button>
+    </div>
+
+    <div class="account-section">
+      <div class="account-card">
+        <div class="acc-label">💰 현재 예금</div>
+        <div class="acc-balance">${fmt(balance)}<span>점</span></div>
+        <div class="acc-link">가나디은행 연동 계좌</div>
+      </div>
+    </div>
+
+    <div class="content" id="tab-content"></div>
+
+    <div class="tabbar">
+      <button class="tab ${activeTab==='shop'?'active':''}" data-tab="shop">
+        <div class="tab-icon">🛍️</div>
+        <div class="tab-label">쿠폰샵</div>
+      </button>
+      <button class="tab ${activeTab==='resell'?'active':''}" data-tab="resell">
+        <div class="tab-icon">🔄</div>
+        <div class="tab-label">리셀샵</div>
+      </button>
+      <button class="tab ${activeTab==='mycoupons'?'active':''}" data-tab="mycoupons">
+        <div class="tab-icon">🎫</div>
+        <div class="tab-label">내 쿠폰</div>
+      </button>
+    </div>
+  `;
+
+  document.getElementById('logout-btn').addEventListener('click',()=>{
+    currentUser = null;
+    localStorage.removeItem('ganadi_coupon_user');
+    render();
+  });
+  $app.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      activeTab = t.dataset.tab;
+      render();
+    });
+  });
+
+  renderTabContent();
+}
+
+function renderTabContent(){
+  const $c = document.getElementById('tab-content');
+  if(activeTab==='shop') renderShop($c);
+  else if(activeTab==='resell') renderResell($c);
+  else if(activeTab==='mycoupons') renderMyCoupons($c);
+}
+
+function renderShop($c){
+  const products = Object.entries(fbState.couponShop.products||{})
+    .map(([id,p])=>({id,...p}))
+    .filter(p=>p && p.name)
+    .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+
+  const html = products.length===0
+    ? `<div class="empty"><div class="empty-icon">🛒</div><div class="empty-text">등록된 상품이 없습니다</div></div>`
+    : `<div class="product-grid">${products.map(productCard).join('')}</div>`;
+
+  $c.innerHTML = `
+    <div class="section-head">
+      <h2 class="section-title">쿠폰샵</h2>
+      <span class="section-count">${products.length}개 상품</span>
+    </div>
+    ${html}
+  `;
+  $c.querySelectorAll('[data-buy]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const id = b.dataset.buy;
+      const p = products.find(x=>x.id===id);
+      if(p) buyProduct(p);
+    });
+  });
+}
+
+function productCard(p){
+  const lowStock = p.stock>0 && p.stock<=3;
+  const soldOut = p.stock<=0;
+  return `
+    <div class="product-card">
+      <div class="product-img">
+        ${p.image||'🎁'}
+        ${lowStock?'<div class="product-badge">품절임박</div>':''}
+        ${soldOut?'<div class="product-soldout">품절</div>':''}
+      </div>
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-price">${fmt(p.price)}점</div>
+        <button class="btn ${soldOut?'btn-disabled':'btn-primary'}" data-buy="${p.id}" ${soldOut?'disabled':''}>
+          ${soldOut?'품절':'구매하기'}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderResell($c){
+  const items = Object.entries(fbState.couponShop.resell||{})
+    .map(([id,r])=>({id,...r}))
+    .filter(r=>r && r.name)
+    .sort((a,b)=>(b.listedAt||0)-(a.listedAt||0));
+
+  const html = items.length===0
+    ? `<div class="empty"><div class="empty-icon">🔄</div><div class="empty-text">등록된 상품이 없습니다</div></div>`
+    : `<div class="product-grid">${items.map(resellCard).join('')}</div>`;
+
+  $c.innerHTML = `
+    <div class="section-head">
+      <h2 class="section-title">리셀샵</h2>
+      <span class="section-count">${items.length}개 등록</span>
+    </div>
+    ${html}
+  `;
+  $c.querySelectorAll('[data-buy-resell]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const id = b.dataset.buyResell;
+      const item = items.find(x=>x.id===id);
+      if(item) buyResell(item);
+    });
+  });
+  $c.querySelectorAll('[data-cancel-resell]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const id = b.dataset.cancelResell;
+      const item = items.find(x=>x.id===id);
+      if(item) cancelResell(item);
+    });
+  });
+}
+
+function resellCard(item){
+  const isOwn = item.sellerName === currentUser;
+  return `
+    <div class="product-card">
+      <div class="product-img" style="background:linear-gradient(135deg,#3d2f0a,#5a3f10);">
+        ${item.image||'🎁'}
+        <div class="product-resell-badge">RESELL</div>
+        ${isOwn?'<div class="product-own-badge">내 상품</div>':''}
+      </div>
+      <div class="product-info">
+        <div class="product-name">${item.name}</div>
+        <div class="product-seller">판매자: ${item.sellerName}</div>
+        <div class="product-price resell">${fmt(item.price)}점</div>
+        ${isOwn
+          ? `<button class="btn btn-sell" data-cancel-resell="${item.id}">판매 취소</button>`
+          : `<button class="btn btn-primary" data-buy-resell="${item.id}">구매하기</button>`}
+      </div>
+    </div>
+  `;
+}
+
+function renderMyCoupons($c){
+  const stuRef = fbState.students?.[currentUser];
+  const coupons = Object.entries(stuRef?.coupons||{})
+    .map(([id,c])=>({id,...c}))
+    .filter(c=>c && c.name)
+    .sort((a,b)=>(b.acquiredAt||0)-(a.acquiredAt||0));
+
+  const html = coupons.length===0
+    ? `<div class="empty"><div class="empty-icon">🎫</div><div class="empty-text">보유한 쿠폰이 없습니다</div></div>`
+    : `<div class="coupon-list">${coupons.map(couponItem).join('')}</div>`;
+
+  $c.innerHTML = `
+    <div class="section-head">
+      <h2 class="section-title">내 쿠폰</h2>
+      <span class="section-count">${coupons.length}장 보유</span>
+    </div>
+    ${html}
+  `;
+  $c.querySelectorAll('[data-sell]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const id = b.dataset.sell;
+      const c = coupons.find(x=>x.id===id);
+      if(c) openSellModal(c);
+    });
+  });
+}
+
+function couponItem(c){
+  const date = c.acquiredAt ? new Date(c.acquiredAt).toLocaleDateString('ko-KR') : '';
+  return `
+    <div class="coupon-item">
+      <div class="coupon-img">${c.image||'🎁'}</div>
+      <div class="coupon-info">
+        <div class="coupon-name">${c.name}${c.gifted?'<span class="gifted-mark">선물</span>':''}</div>
+        <div class="coupon-meta">${date} 획득${c.originalPrice?` · ${fmt(c.originalPrice)}점`:''}</div>
+        <div class="coupon-actions">
+          <button class="btn-small btn-small-sell" data-sell="${c.id}">리셀샵에 판매</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// === Actions ===
+async function buyProduct(p){
+  showModal(`
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">구매 확인</h3>
+    <p class="modal-text">${p.name}을(를)\n${fmt(p.price)}점에 구매하시겠습니까?</p>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
+      <button class="modal-btn modal-btn-confirm" id="m-confirm">구매하기</button>
+    </div>
+  `);
+  document.getElementById('m-cancel').onclick = closeModal;
+  document.getElementById('m-confirm').onclick = async ()=>{
+    closeModal();
+    try {
+      // Check stock
+      const productRef = ref(db, `state/couponShop/products/${p.id}`);
+      let stockOk = true;
+      await runTransaction(productRef, cur=>{
+        if(!cur) { stockOk=false; return cur; }
+        if((cur.stock||0)<=0) { stockOk=false; return cur; }
+        cur.stock = (cur.stock||0) - 1;
+        return cur;
+      });
+      if(!stockOk){ showToast('품절된 상품입니다','error'); return; }
+
+      // Deduct deposit
+      let okDeposit = true;
+      await runTransaction(ref(db,`state/students/${currentUser}`), cur=>{
+        if(!cur) cur = {};
+        if((cur.deposit??0) < p.price){ okDeposit=false; return cur; }
+        cur.deposit = Math.round(((cur.deposit??0) - p.price)*100)/100;
+        if(!cur.coupons) cur.coupons = {};
+        const cid = 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+        cur.coupons[cid] = {
+          name:p.name, image:p.image, originalPrice:p.price,
+          productId:p.id, acquiredAt:Date.now()
+        };
+        return cur;
+      });
+      if(!okDeposit){
+        // Revert stock
+        await runTransaction(productRef, cur=>{
+          if(cur) cur.stock = (cur.stock||0) + 1;
+          return cur;
+        });
+        showToast('예금이 부족합니다','error');
+        return;
+      }
+      showToast(p.name+' 구매 완료!','success');
+    } catch(e){
+      console.error(e);
+      showToast('구매 중 오류가 발생했습니다','error');
+    }
+  };
+}
+
+async function buyResell(item){
+  if(item.sellerName === currentUser){
+    showToast('자신의 상품은 구매할 수 없습니다','error');
+    return;
+  }
+  showModal(`
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">리셀 구매 확인</h3>
+    <p class="modal-text">${item.name}을(를)\n${fmt(item.price)}점에 구매하시겠습니까?\n(판매자: ${item.sellerName})</p>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
+      <button class="modal-btn modal-btn-confirm" id="m-confirm">구매하기</button>
+    </div>
+  `);
+  document.getElementById('m-cancel').onclick = closeModal;
+  document.getElementById('m-confirm').onclick = async ()=>{
+    closeModal();
+    try {
+      // Check item exists
+      const itemSnap = await get(ref(db,`state/couponShop/resell/${item.id}`));
+      if(!itemSnap.exists()){
+        showToast('이미 판매된 상품입니다','error');
+        return;
+      }
+
+      // Check buyer balance
+      const buyerSnap = await get(ref(db,`state/students/${currentUser}`));
+      const buyerData = buyerSnap.val() || {};
+      if((buyerData.deposit??0) < item.price){
+        showToast('예금이 부족합니다','error');
+        return;
+      }
+
+      // Remove resell item first (atomic-ish)
+      await remove(ref(db,`state/couponShop/resell/${item.id}`));
+
+      // Deduct buyer + add coupon
+      await runTransaction(ref(db,`state/students/${currentUser}`), cur=>{
+        if(!cur) cur = {};
+        cur.deposit = Math.round(((cur.deposit??0) - item.price)*100)/100;
+        if(!cur.coupons) cur.coupons = {};
+        const cid = 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+        cur.coupons[cid] = {
+          name:item.name, image:item.image, originalPrice:item.price,
+          productId:item.productId, acquiredAt:Date.now()
+        };
+        return cur;
+      });
+
+      // Add to seller
+      await runTransaction(ref(db,`state/students/${item.sellerName}`), cur=>{
+        if(!cur) cur = {};
+        cur.deposit = Math.round(((cur.deposit??0) + item.price)*100)/100;
+        return cur;
+      });
+
+      showToast(item.name+' 구매 완료!','success');
+    } catch(e){
+      console.error(e);
+      showToast('구매 중 오류가 발생했습니다','error');
+    }
+  };
+}
+
+async function cancelResell(item){
+  showModal(`
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">판매 취소</h3>
+    <p class="modal-text">${item.name}의 리셀 등록을 취소하시겠습니까?\n쿠폰이 다시 내 쿠폰함으로 돌아옵니다.</p>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" id="m-cancel">아니오</button>
+      <button class="modal-btn modal-btn-confirm" id="m-confirm">판매 취소</button>
+    </div>
+  `);
+  document.getElementById('m-cancel').onclick = closeModal;
+  document.getElementById('m-confirm').onclick = async ()=>{
+    closeModal();
+    try {
+      await remove(ref(db,`state/couponShop/resell/${item.id}`));
+      await runTransaction(ref(db,`state/students/${currentUser}`), cur=>{
+        if(!cur) cur = {};
+        if(!cur.coupons) cur.coupons = {};
+        const cid = 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+        cur.coupons[cid] = {
+          name:item.name, image:item.image, originalPrice:item.price,
+          productId:item.productId, acquiredAt:Date.now()
+        };
+        return cur;
+      });
+      showToast('판매가 취소되었습니다','success');
+    } catch(e){
+      console.error(e);
+      showToast('오류가 발생했습니다','error');
+    }
+  };
+}
+
+function openSellModal(coupon){
+  showModal(`
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">리셀샵 등록</h3>
+    <p class="modal-text">판매할 가격을 입력하세요</p>
+    <div class="sell-preview">
+      <div class="sell-preview-img">${coupon.image||'🎁'}</div>
+      <div>
+        <div style="font-size:14px;font-weight:700;">${coupon.name}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">획득가: ${fmt(coupon.originalPrice||0)}점</div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">판매 가격 (점)</label>
+      <input type="number" class="field-input" id="sell-price" placeholder="예: 5000" inputmode="numeric">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
+      <button class="modal-btn modal-btn-confirm" id="m-confirm">등록하기</button>
+    </div>
+  `);
+  document.getElementById('m-cancel').onclick = closeModal;
+  document.getElementById('m-confirm').onclick = async ()=>{
+    const price = parseInt(document.getElementById('sell-price').value);
+    if(!price || price<=0){ showToast('유효한 가격을 입력해주세요','error'); return; }
+    closeModal();
+    try {
+      // Remove from user's coupons
+      await runTransaction(ref(db,`state/students/${currentUser}/coupons/${coupon.id}`), cur=>null);
+
+      // Add to resell shop
+      const rid = 'r_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+      await set(ref(db,`state/couponShop/resell/${rid}`),{
+        name:coupon.name,
+        image:coupon.image,
+        productId:coupon.productId||'',
+        price:price,
+        sellerName:currentUser,
+        listedAt:Date.now(),
+        originalCouponId:coupon.id
+      });
+      showToast('리셀샵에 등록되었습니다','success');
+    } catch(e){
+      console.error(e);
+      showToast('등록 중 오류가 발생했습니다','error');
+    }
+  };
+}
+
+render();
+</script>
+</body>
+</html>
