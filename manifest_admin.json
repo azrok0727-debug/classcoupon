@@ -1,7 +1,7 @@
 {
-  "name": "가나디 쿠폰샵 관리자",
+  "name": "가나디쿠폰샵 관리자",
   "short_name": "관리자",
-  "description": "가나디 쿠폰샵 - 관리자",
+  "description": "가나디쿠폰샵 - 관리자",
   "start_url": "./ganadi_coupon_admin.html",
   "scope": "./",
   "display": "standalone",

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>가나디 쿠폰샵 관리자</title>
+<title>가나디쿠폰샵 관리자</title>
 
 <!-- PWA -->
 <link rel="manifest" href="manifest_admin.json">
@@ -35,11 +35,11 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--text1);font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;}
-body{min-height:100vh;padding-bottom:90px;}
+body{min-height:100vh;padding-top:env(safe-area-inset-top);padding-bottom:calc(90px + env(safe-area-inset-bottom));padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
 button{font-family:inherit;cursor:pointer;}
 input{font-family:inherit;}
 
-.header{padding:18px 20px 8px;display:flex;justify-content:space-between;align-items:center;}
+.header{padding:calc(12px + env(safe-area-inset-top)) 20px 8px;display:flex;justify-content:space-between;align-items:center;}
 .header-left{display:flex;align-items:center;gap:10px;}
 .logo{width:36px;height:36px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff;}
 .brand-sub{font-size:10px;color:var(--text3);letter-spacing:1.5px;font-weight:600;}
@@ -100,6 +100,7 @@ input{font-family:inherit;}
 .coupon-summary-left{display:flex;align-items:center;gap:8px;}
 .coupon-summary-left span{font-size:13px;font-weight:600;}
 .coupon-count-badge{font-size:11px;font-weight:700;color:var(--gold2);background:rgba(245,158,11,0.15);padding:3px 10px;border-radius:10px;}
+.btn-coupon-use{background:rgba(16,185,129,0.15);color:var(--success);border:none;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;}
 .empty-mini{font-size:12px;color:var(--text3);text-align:center;padding:14px 0;}
 
 /* Big action button */
@@ -112,7 +113,7 @@ input{font-family:inherit;}
 .empty-text{font-size:13px;color:var(--text3);}
 
 /* Tabs */
-.tabbar{position:fixed;bottom:0;left:0;right:0;background:rgba(23,21,19,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 12px;z-index:50;}
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:rgba(23,21,19,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 calc(12px + env(safe-area-inset-bottom));z-index:50;}
 .tab{flex:1;background:none;border:none;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text3);}
 .tab.active{color:var(--gold2);}
 .tab-icon{font-size:20px;}
@@ -152,7 +153,7 @@ input{font-family:inherit;}
 .product-select-item .pemoji{font-size:24px;}
 
 /* Toast */
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:var(--surface);color:#fff;padding:12px 22px;border-radius:12px;font-size:13px;font-weight:600;border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:200;transition:transform 0.3s;}
+.toast{position:fixed;top:calc(env(safe-area-inset-top) + 16px);left:50%;transform:translateX(-50%) translateY(-200px);background:var(--surface);color:#fff;padding:12px 22px;border-radius:12px;font-size:13px;font-weight:600;border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:200;transition:transform 0.3s;max-width:calc(100% - 32px);text-align:center;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .toast.error{background:#7f1d1d;border-color:#dc2626;}
 .toast.success{background:#064e3b;border-color:#10b981;}
@@ -444,13 +445,13 @@ function renderStudentList(){
           ${couponCount===0
             ? `<div class="empty-mini">보유한 쿠폰이 없습니다</div>`
             : `<div class="coupon-summary-list">
-                ${Object.entries(grouped).map(([name,info])=>`
+                ${couponList.map((c,idx)=>`
                   <div class="coupon-summary-item">
                     <div class="coupon-summary-left">
-                      <span style="font-size:18px;">${info.image||'🎁'}</span>
-                      <span>${name}</span>
+                      <span style="font-size:18px;">${c.image||'🎁'}</span>
+                      <span>${c.name}</span>
                     </div>
-                    <span class="coupon-count-badge">${info.count}장</span>
+                    <button class="btn-coupon-use" data-use="${c.id||idx}" data-student="${s.name}">사용</button>
                   </div>
                 `).join('')}
               </div>`}
@@ -464,6 +465,13 @@ function renderStudentList(){
       const name = h.dataset.toggle;
       expandedStudent = expandedStudent === name ? null : name;
       renderStudentList();
+    });
+  });
+  $list.querySelectorAll('[data-use]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const couponId = b.dataset.use;
+      const studentName = b.dataset.student;
+      confirmUseCoupon(studentName, couponId);
     });
   });
 }
@@ -695,6 +703,30 @@ function confirmCancelResell(item){
         return cur;
       });
       showToast('리셀 등록이 취소되었습니다','success');
+    } catch(e){
+      console.error(e);
+      showToast('오류가 발생했습니다','error');
+    }
+  };
+}
+
+function confirmUseCoupon(studentName, couponId){
+  showModal(`
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">쿠폰 사용</h3>
+    <p class="modal-text">${studentName}님의 쿠폰을 사용 처리하시겠습니까?\n삭제되며 복구할 수 없습니다.</p>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
+      <button class="modal-btn modal-btn-danger" id="m-confirm">사용 처리</button>
+    </div>
+  `);
+  document.getElementById('m-cancel').onclick = closeModal;
+  document.getElementById('m-confirm').onclick = async ()=>{
+    closeModal();
+    try {
+      await runTransaction(ref(db,`state/students/${studentName}/coupons/${couponId}`), cur=>null);
+      showToast('쿠폰이 사용 처리되었습니다','success');
+      renderStudentList();
     } catch(e){
       console.error(e);
       showToast('오류가 발생했습니다','error');

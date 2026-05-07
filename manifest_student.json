@@ -1,7 +1,7 @@
 {
-  "name": "가나디 쿠폰샵",
+  "name": "가나디쿠폰샵",
   "short_name": "쿠폰샵",
-  "description": "가나디 쿠폰샵 - 학생용",
+  "description": "가나디쿠폰샵 - 학생용",
   "start_url": "./ganadi_coupon_student.html",
   "scope": "./",
   "display": "standalone",

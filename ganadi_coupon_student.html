@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>가나디 쿠폰샵</title>
+<title>가나디쿠폰샵</title>
 
 <!-- PWA -->
 <link rel="manifest" href="manifest_student.json">
@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="가나디 쿠폰샵">
+<meta name="apple-mobile-web-app-title" content="가나디쿠폰샵">
 <link rel="icon" type="image/png" sizes="32x32" href="icon_student_32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon_student_192.png">
 <link rel="apple-touch-icon" href="icon_student_180.png">
@@ -41,7 +41,7 @@ button{font-family:inherit;cursor:pointer;}
 input{font-family:inherit;}
 
 /* Header */
-.header{padding:18px 20px 8px;display:flex;justify-content:space-between;align-items:center;}
+.header{padding:calc(12px + env(safe-area-inset-top)) 20px 8px;display:flex;justify-content:space-between;align-items:center;}
 .header-left{display:flex;align-items:center;gap:10px;}
 .logo{width:36px;height:36px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;}
 .brand-sub{font-size:10px;color:var(--text3);letter-spacing:1.5px;font-weight:600;}
@@ -531,6 +531,19 @@ async function buyProduct(p){
         showToast('예금이 부족합니다','error');
         return;
       }
+      
+      // Record bank transaction
+      await runTransaction(ref(db,`state/bankHistory/${currentUser}`), cur=>{
+        const hist = cur || [];
+        hist.push({
+          type:'coupon-buy',
+          productName:p.name,
+          amount:p.price,
+          ts:Date.now()
+        });
+        return hist;
+      });
+      
       showToast(p.name+' 구매 완료!','success');
     } catch(e){
       console.error(e);
@@ -593,6 +606,31 @@ async function buyResell(item){
         if(!cur) cur = {};
         cur.deposit = Math.round(((cur.deposit??0) + item.price)*100)/100;
         return cur;
+      });
+
+      // Record bank transactions for both parties
+      await runTransaction(ref(db,`state/bankHistory/${currentUser}`), cur=>{
+        const hist = cur || [];
+        hist.push({
+          type:'coupon-resell-buy',
+          productName:item.name,
+          fromStudent:item.sellerName,
+          amount:item.price,
+          ts:Date.now()
+        });
+        return hist;
+      });
+      
+      await runTransaction(ref(db,`state/bankHistory/${item.sellerName}`), cur=>{
+        const hist = cur || [];
+        hist.push({
+          type:'coupon-resell-sell',
+          productName:item.name,
+          toStudent:currentUser,
+          amount:item.price,
+          ts:Date.now()
+        });
+        return hist;
       });
 
       showToast(item.name+' 구매 완료!','success');
