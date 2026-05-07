@@ -724,9 +724,9 @@ function confirmUseCoupon(studentName, couponId){
   document.getElementById('m-confirm').onclick = async ()=>{
     closeModal();
     try {
-      await runTransaction(ref(db,`state/students/${studentName}/coupons/${couponId}`), cur=>null);
+      await remove(ref(db,`state/students/${studentName}/coupons/${couponId}`));
       showToast('쿠폰이 사용 처리되었습니다','success');
-      renderStudentList();
+      render();
     } catch(e){
       console.error(e);
       showToast('오류가 발생했습니다','error');
