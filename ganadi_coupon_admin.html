@@ -80,6 +80,7 @@ input{font-family:inherit;}
 .item-meta span{margin:0 4px;}
 .item-action{background:rgba(239,68,68,0.15);color:var(--danger);border:none;padding:8px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
 .item-action.gold{background:rgba(245,158,11,0.15);color:var(--gold2);}
+.item-action.edit{background:rgba(59,130,246,0.15);color:#3b82f6;margin-right:6px;}
 
 /* Student card */
 .student-card{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;}
@@ -337,12 +338,20 @@ function renderProducts($c){
               <div class="item-name">${p.name}</div>
               <div class="item-meta">${fmt(p.price)}점<span>·</span>재고 ${p.stock||0}개</div>
             </div>
+            <button class="item-action edit" data-edit-product="${p.id}" title="수정">✏️</button>
             <button class="item-action" data-delete-product="${p.id}" title="삭제">🗑️</button>
           </div>
         `).join('')}</div>`}
   `;
 
   document.getElementById('btn-add-product').onclick = openAddProductModal;
+  $c.querySelectorAll('[data-edit-product]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const id = b.dataset.editProduct;
+      const p = products.find(x=>x.id===id);
+      if(p) openEditProductModal(p);
+    });
+  });
   $c.querySelectorAll('[data-delete-product]').forEach(b=>{
     b.addEventListener('click', ()=>{
       const id = b.dataset.deleteProduct;
@@ -566,6 +575,65 @@ function openAddProductModal(){
     } catch(e){
       console.error(e);
       showToast('등록 중 오류 발생','error');
+    }
+  };
+}
+
+let editingProduct = null;
+function openEditProductModal(p){
+  editingProduct = p;
+  let selEmoji = p.image || '🎁';
+  const emojis = ['🎁','📚','🍪','🍭','🪑','🎵','🎮','⚽','🏆','✏️','🎨','🍰','☕','🎟️','⭐','💎'];
+  showModal(`
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">상품 수정</h3>
+    <div class="field">
+      <label class="field-label">상품 아이콘</label>
+      <div class="emoji-grid" id="emoji-grid">
+        ${emojis.map(e=>`<button class="emoji-btn ${e===selEmoji?'selected':''}" data-emoji="${e}">${e}</button>`).join('')}
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">상품명</label>
+      <input type="text" class="field-input" id="p-name" placeholder="예: 숙제 면제권" value="${p.name}">
+    </div>
+    <div class="field">
+      <label class="field-label">가격 (점)</label>
+      <input type="number" class="field-input" id="p-price" placeholder="예: 5000" inputmode="numeric" value="${p.price}">
+    </div>
+    <div class="field">
+      <label class="field-label">재고 수량</label>
+      <input type="number" class="field-input" id="p-stock" placeholder="예: 10" inputmode="numeric" value="${p.stock||0}">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
+      <button class="modal-btn modal-btn-confirm" id="m-confirm">수정하기</button>
+    </div>
+  `);
+  document.querySelectorAll('#emoji-grid .emoji-btn').forEach(b=>{
+    b.onclick = ()=>{
+      selEmoji = b.dataset.emoji;
+      document.querySelectorAll('#emoji-grid .emoji-btn').forEach(x=>x.classList.toggle('selected', x.dataset.emoji===selEmoji));
+    };
+  });
+  document.getElementById('m-cancel').onclick = closeModal;
+  document.getElementById('m-confirm').onclick = async ()=>{
+    const name = document.getElementById('p-name').value.trim();
+    const price = parseInt(document.getElementById('p-price').value);
+    const stock = parseInt(document.getElementById('p-stock').value);
+    if(!name || !price || price<=0 || isNaN(stock) || stock<0){
+      showToast('모든 항목을 올바르게 입력해주세요','error');
+      return;
+    }
+    closeModal();
+    try {
+      await update(ref(db,`state/couponShop/products/${p.id}`),{
+        name, price, stock, image:selEmoji
+      });
+      showToast('상품이 수정되었습니다','success');
+    } catch(e){
+      console.error(e);
+      showToast('수정 중 오류 발생','error');
     }
   };
 }
