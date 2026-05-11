@@ -662,7 +662,8 @@ function openGiveCouponModal(){
           originalPrice:giveProduct.price,
           productId:giveProduct.id,
           acquiredAt:Date.now(),
-          gifted:true
+          gifted:true,
+          expiresAt:Date.now() + 7*24*3600*1000
         };
         return cur;
       });
@@ -698,7 +699,8 @@ function confirmCancelResell(item){
           image:item.image,
           originalPrice:item.price,
           productId:item.productId||'',
-          acquiredAt:Date.now()
+          acquiredAt:Date.now(),
+          expiresAt:Date.now() + 7*24*3600*1000
         };
         return cur;
       });

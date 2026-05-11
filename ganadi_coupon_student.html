@@ -441,41 +441,56 @@ function resellCard(item){
 
 function renderMyCoupons($c){
   const stuRef = fbState.students?.[currentUser];
-  const coupons = Object.entries(stuRef?.coupons||{})
+  const now = Date.now();
+  const allCoupons = Object.entries(stuRef?.coupons||{})
     .map(([id,c])=>({id,...c}))
-    .filter(c=>c && c.name)
-    .sort((a,b)=>(b.acquiredAt||0)-(a.acquiredAt||0));
+    .filter(c=>c && c.name);
+  
+  const validCoupons = allCoupons.filter(c=>(c.expiresAt||0) > now);
+  const expiredCoupons = allCoupons.filter(c=>(c.expiresAt||0) <= now);
+  
+  const validHtml = validCoupons.length === 0
+    ? ''
+    : `<div class="coupon-list">${validCoupons.sort((a,b)=>(b.acquiredAt||0)-(a.acquiredAt||0)).map(couponItem).join('')}</div>`;
+  
+  const expiredHtml = expiredCoupons.length === 0
+    ? ''
+    : `<div style="margin-top:24px;"><div style="font-size:13px;font-weight:700;color:var(--text3);margin-bottom:12px;">📭 만료된 쿠폰 (${expiredCoupons.length}장)</div><div class="coupon-list">${expiredCoupons.sort((a,b)=>(b.acquiredAt||0)-(a.acquiredAt||0)).map(c=>couponItem(c,true)).join('')}</div></div>`;
 
-  const html = coupons.length===0
+  const html = validCoupons.length === 0 && expiredCoupons.length === 0
     ? `<div class="empty"><div class="empty-icon">🎫</div><div class="empty-text">보유한 쿠폰이 없습니다</div></div>`
-    : `<div class="coupon-list">${coupons.map(couponItem).join('')}</div>`;
+    : validHtml + expiredHtml;
 
   $c.innerHTML = `
     <div class="section-head">
       <h2 class="section-title">내 쿠폰</h2>
-      <span class="section-count">${coupons.length}장 보유</span>
+      <span class="section-count">${validCoupons.length}장 보유</span>
     </div>
     ${html}
   `;
   $c.querySelectorAll('[data-sell]').forEach(b=>{
     b.addEventListener('click',()=>{
       const id = b.dataset.sell;
-      const c = coupons.find(x=>x.id===id);
+      const c = validCoupons.find(x=>x.id===id);
       if(c) openSellModal(c);
     });
   });
 }
 
-function couponItem(c){
+function couponItem(c, isExpired){
   const date = c.acquiredAt ? new Date(c.acquiredAt).toLocaleDateString('ko-KR') : '';
+  const daysLeft = c.expiresAt ? Math.ceil((c.expiresAt - Date.now()) / (24*3600*1000)) : 0;
+  const expireText = isExpired ? '만료됨' : daysLeft > 0 ? `${daysLeft}일 남음` : '만료됨';
+  const expireStyle = isExpired || daysLeft <= 0 ? 'color:var(--danger);' : daysLeft <= 1 ? 'color:var(--danger);font-weight:700;' : 'color:var(--text3);';
   return `
-    <div class="coupon-item">
+    <div class="coupon-item" style="${isExpired?'opacity:0.6;':''}">`
       <div class="coupon-img">${c.image||'🎁'}</div>
       <div class="coupon-info">
         <div class="coupon-name">${c.name}${c.gifted?'<span class="gifted-mark">선물</span>':''}</div>
         <div class="coupon-meta">${date} 획득${c.originalPrice?` · ${fmt(c.originalPrice)}점`:''}</div>
+        <div style="font-size:10px;margin:6px 0;${expireStyle}">⏰ 유효기간: ${expireText}</div>
         <div class="coupon-actions">
-          <button class="btn-small btn-small-sell" data-sell="${c.id}">리셀샵에 판매</button>
+          <button class="btn-small btn-small-sell" data-sell="${c.id}" ${isExpired?'disabled':''} style="${isExpired?'opacity:0.5;cursor:not-allowed;':''}">리셀샵에 판매</button>
         </div>
       </div>
     </div>
@@ -518,7 +533,8 @@ async function buyProduct(p){
         const cid = 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
         cur.coupons[cid] = {
           name:p.name, image:p.image, originalPrice:p.price,
-          productId:p.id, acquiredAt:Date.now()
+          productId:p.id, acquiredAt:Date.now(),
+          expiresAt:Date.now() + 7*24*3600*1000
         };
         return cur;
       });
@@ -596,7 +612,8 @@ async function buyResell(item){
         const cid = 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
         cur.coupons[cid] = {
           name:item.name, image:item.image, originalPrice:item.price,
-          productId:item.productId, acquiredAt:Date.now()
+          productId:item.productId, acquiredAt:Date.now(),
+          expiresAt:Date.now() + 7*24*3600*1000
         };
         return cur;
       });
@@ -662,7 +679,8 @@ async function cancelResell(item){
         const cid = 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
         cur.coupons[cid] = {
           name:item.name, image:item.image, originalPrice:item.price,
-          productId:item.productId, acquiredAt:Date.now()
+          productId:item.productId, acquiredAt:Date.now(),
+          expiresAt:Date.now() + 7*24*3600*1000
         };
         return cur;
       });
