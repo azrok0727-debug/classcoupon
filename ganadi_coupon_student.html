@@ -804,7 +804,7 @@ async function cancelResell(item){
         cur.coupons[cid] = {
           name:item.name, image:item.image, originalPrice:item.price,
           productId:item.productId, acquiredAt:Date.now(),
-          expiresAt:Date.now() + 7*24*3600*1000
+          expiresAt:item.expiresAt
         };
         return cur;
       });
