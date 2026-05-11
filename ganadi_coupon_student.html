@@ -386,10 +386,22 @@ function productCard(p){
 }
 
 function renderResell($c){
-  const items = Object.entries(fbState.couponShop.resell||{})
+  const now = Date.now();
+  let allItems = Object.entries(fbState.couponShop.resell||{})
     .map(([id,r])=>({id,...r}))
-    .filter(r=>r && r.name)
-    .sort((a,b)=>(b.listedAt||0)-(a.listedAt||0));
+    .filter(r=>r && r.name);
+  
+  // 만료된 상품 자동 삭제
+  const validItems = allItems.filter(r=>(r.expiresAt||0) > now);
+  const expiredIds = allItems.filter(r=>(r.expiresAt||0) <= now).map(r=>r.id);
+  
+  if(expiredIds.length > 0){
+    expiredIds.forEach(id=>{
+      remove(ref(db,`state/couponShop/resell/${id}`));
+    });
+  }
+  
+  const items = validItems.sort((a,b)=>(b.listedAt||0)-(a.listedAt||0));
 
   const html = items.length===0
     ? `<div class="empty"><div class="empty-icon">🔄</div><div class="empty-text">등록된 상품이 없습니다</div></div>`
@@ -420,6 +432,8 @@ function renderResell($c){
 
 function resellCard(item){
   const isOwn = item.sellerName === currentUser;
+  const daysLeft = item.expiresAt ? Math.ceil((item.expiresAt - Date.now()) / (24*3600*1000)) : 0;
+  const expireStyle = daysLeft <= 1 ? 'color:var(--danger);font-weight:700;' : 'color:var(--text3);';
   return `
     <div class="product-card">
       <div class="product-img" style="background:linear-gradient(135deg,#3d2f0a,#5a3f10);">
@@ -431,6 +445,7 @@ function resellCard(item){
         <div class="product-name">${item.name}</div>
         <div class="product-seller">판매자: ${item.sellerName}</div>
         <div class="product-price resell">${fmt(item.price)}점</div>
+        <div style="font-size:10px;margin:4px 0;${expireStyle}">⏰ ${daysLeft}일 남음</div>
         ${isOwn
           ? `<button class="btn btn-sell" data-cancel-resell="${item.id}">판매 취소</button>`
           : `<button class="btn btn-primary" data-buy-resell="${item.id}">구매하기</button>`}
@@ -613,7 +628,7 @@ async function buyResell(item){
         cur.coupons[cid] = {
           name:item.name, image:item.image, originalPrice:item.price,
           productId:item.productId, acquiredAt:Date.now(),
-          expiresAt:Date.now() + 7*24*3600*1000
+          expiresAt:item.expiresAt
         };
         return cur;
       });
@@ -731,7 +746,8 @@ function openSellModal(coupon){
         price:price,
         sellerName:currentUser,
         listedAt:Date.now(),
-        originalCouponId:coupon.id
+        originalCouponId:coupon.id,
+        expiresAt:coupon.expiresAt
       });
       showToast('리셀샵에 등록되었습니다','success');
     } catch(e){
