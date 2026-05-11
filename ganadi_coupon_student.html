@@ -273,6 +273,7 @@ function renderLogin(){
 
 function renderMain(){
   const balance = dep(currentUser);
+  const couponBalance = fbState?.students?.[currentUser]?.couponBalance ?? 0;
   $app.innerHTML = `
     <div class="header">
       <div class="header-left">
@@ -290,6 +291,11 @@ function renderMain(){
         <div class="acc-label">💰 현재 예금</div>
         <div class="acc-balance">${fmt(balance)}<span>점</span></div>
         <div class="acc-link">가나디은행 연동 계좌</div>
+      </div>
+      <div class="account-card" style="background:linear-gradient(135deg,#78350f 0%,#92400e 50%,#5a3f10 100%);margin-top:12px;">
+        <div class="acc-label">🎟️ 쿠폰 지원금</div>
+        <div class="acc-balance">${fmt(couponBalance)}<span>점</span></div>
+        <div class="acc-link">쿠폰샵 전용 지원금</div>
       </div>
     </div>
 
@@ -514,17 +520,59 @@ function couponItem(c, isExpired){
 
 // === Actions ===
 async function buyProduct(p){
+  // 쿠폰 지원금 확인
+  const couponBalance = fbState?.students?.[currentUser]?.couponBalance ?? 0;
+  
   showModal(`
     <div class="modal-handle"></div>
-    <h3 class="modal-title">구매 확인</h3>
-    <p class="modal-text">${p.name}을(를)\n${fmt(p.price)}점에 구매하시겠습니까?</p>
+    <h3 class="modal-title">쿠폰 구매</h3>
+    <p class="modal-text">${p.name}</p>
+    <div style="background:var(--surface);border-radius:12px;padding:16px;margin-bottom:16px;">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px;">결제 가격</div>
+      <div style="font-size:20px;font-weight:800;color:var(--accent2);margin-bottom:16px;">${fmt(p.price)}점</div>
+      
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px;">🎟️ 쿠폰 지원금 사용</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+        <input type="range" id="coupon-slider" min="0" max="${couponBalance}" value="0" style="flex:1;accent-color:var(--gold);">
+        <span id="coupon-display" style="font-size:13px;font-weight:700;color:var(--gold);min-width:50px;text-align:right;">0점</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);">보유: ${fmt(couponBalance)}점</div>
+      
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="color:var(--text3);">내 예금 사용</span>
+          <span id="final-deposit" style="font-weight:700;color:var(--text1);">${fmt(p.price)}점</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;">
+          <span>최종 결제</span>
+          <span id="final-price" style="color:var(--accent2);font-size:16px;">${fmt(p.price)}점</span>
+        </div>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
       <button class="modal-btn modal-btn-confirm" id="m-confirm">구매하기</button>
     </div>
   `);
+  
+  const slider = document.getElementById('coupon-slider');
+  const display = document.getElementById('coupon-display');
+  const finalDeposit = document.getElementById('final-deposit');
+  const finalPrice = document.getElementById('final-price');
+  
+  slider.addEventListener('input', ()=>{
+    const used = parseInt(slider.value);
+    const remaining = Math.max(0, p.price - used);
+    display.textContent = fmt(used) + '점';
+    finalDeposit.textContent = fmt(remaining) + '점';
+    finalPrice.textContent = fmt(remaining) + '점';
+  });
+  
   document.getElementById('m-cancel').onclick = closeModal;
   document.getElementById('m-confirm').onclick = async ()=>{
+    const usedCoupon = parseInt(slider.value);
+    const depositUsed = p.price - usedCoupon;
+    
     closeModal();
     try {
       // Check stock
@@ -538,12 +586,21 @@ async function buyProduct(p){
       });
       if(!stockOk){ showToast('품절된 상품입니다','error'); return; }
 
-      // Deduct deposit
+      // Deduct deposit + coupon balance
       let okDeposit = true;
       await runTransaction(ref(db,`state/students/${currentUser}`), cur=>{
         if(!cur) cur = {};
-        if((cur.deposit??0) < p.price){ okDeposit=false; return cur; }
-        cur.deposit = Math.round(((cur.deposit??0) - p.price)*100)/100;
+        const currentDeposit = cur.deposit ?? 0;
+        const currentCoupon = cur.couponBalance ?? 0;
+        
+        if(currentDeposit < depositUsed || currentCoupon < usedCoupon){ 
+          okDeposit=false; 
+          return cur; 
+        }
+        
+        cur.deposit = Math.round((currentDeposit - depositUsed)*100)/100;
+        cur.couponBalance = Math.round((currentCoupon - usedCoupon)*100)/100;
+        
         if(!cur.coupons) cur.coupons = {};
         const cid = 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
         cur.coupons[cid] = {
@@ -569,7 +626,9 @@ async function buyProduct(p){
         hist.push({
           type:'coupon-buy',
           productName:p.name,
-          amount:p.price,
+          depositUsed:depositUsed,
+          couponUsed:usedCoupon,
+          totalAmount:p.price,
           ts:Date.now()
         });
         return hist;
@@ -588,17 +647,61 @@ async function buyResell(item){
     showToast('자신의 상품은 구매할 수 없습니다','error');
     return;
   }
+  
+  // 쿠폰 지원금 확인
+  const couponBalance = fbState?.students?.[currentUser]?.couponBalance ?? 0;
+  
   showModal(`
     <div class="modal-handle"></div>
-    <h3 class="modal-title">리셀 구매 확인</h3>
-    <p class="modal-text">${item.name}을(를)\n${fmt(item.price)}점에 구매하시겠습니까?\n(판매자: ${item.sellerName})</p>
+    <h3 class="modal-title">리셀 구매</h3>
+    <p class="modal-text">${item.name}</p>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">판매자: ${item.sellerName}</div>
+    <div style="background:var(--surface);border-radius:12px;padding:16px;margin-bottom:16px;">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px;">결제 가격</div>
+      <div style="font-size:20px;font-weight:800;color:var(--gold);margin-bottom:16px;">${fmt(item.price)}점</div>
+      
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px;">🎟️ 쿠폰 지원금 사용</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+        <input type="range" id="coupon-slider" min="0" max="${couponBalance}" value="0" style="flex:1;accent-color:var(--gold);">
+        <span id="coupon-display" style="font-size:13px;font-weight:700;color:var(--gold);min-width:50px;text-align:right;">0점</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);">보유: ${fmt(couponBalance)}점</div>
+      
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="color:var(--text3);">내 예금 사용</span>
+          <span id="final-deposit" style="font-weight:700;color:var(--text1);">${fmt(item.price)}점</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;">
+          <span>최종 결제</span>
+          <span id="final-price" style="color:var(--gold);font-size:16px;">${fmt(item.price)}점</span>
+        </div>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
       <button class="modal-btn modal-btn-confirm" id="m-confirm">구매하기</button>
     </div>
   `);
+  
+  const slider = document.getElementById('coupon-slider');
+  const display = document.getElementById('coupon-display');
+  const finalDeposit = document.getElementById('final-deposit');
+  const finalPrice = document.getElementById('final-price');
+  
+  slider.addEventListener('input', ()=>{
+    const used = parseInt(slider.value);
+    const remaining = Math.max(0, item.price - used);
+    display.textContent = fmt(used) + '점';
+    finalDeposit.textContent = fmt(remaining) + '점';
+    finalPrice.textContent = fmt(remaining) + '점';
+  });
+  
   document.getElementById('m-cancel').onclick = closeModal;
   document.getElementById('m-confirm').onclick = async ()=>{
+    const usedCoupon = parseInt(slider.value);
+    const depositUsed = item.price - usedCoupon;
+    
     closeModal();
     try {
       // Check item exists
@@ -611,18 +714,22 @@ async function buyResell(item){
       // Check buyer balance
       const buyerSnap = await get(ref(db,`state/students/${currentUser}`));
       const buyerData = buyerSnap.val() || {};
-      if((buyerData.deposit??0) < item.price){
+      const currentDeposit = buyerData.deposit ?? 0;
+      const currentCoupon = buyerData.couponBalance ?? 0;
+      
+      if(currentDeposit < depositUsed || currentCoupon < usedCoupon){
         showToast('예금이 부족합니다','error');
         return;
       }
 
-      // Remove resell item first (atomic-ish)
+      // Remove resell item first
       await remove(ref(db,`state/couponShop/resell/${item.id}`));
 
       // Deduct buyer + add coupon
       await runTransaction(ref(db,`state/students/${currentUser}`), cur=>{
         if(!cur) cur = {};
-        cur.deposit = Math.round(((cur.deposit??0) - item.price)*100)/100;
+        cur.deposit = Math.round(((cur.deposit??0) - depositUsed)*100)/100;
+        cur.couponBalance = Math.round(((cur.couponBalance??0) - usedCoupon)*100)/100;
         if(!cur.coupons) cur.coupons = {};
         const cid = 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
         cur.coupons[cid] = {
@@ -647,7 +754,9 @@ async function buyResell(item){
           type:'coupon-resell-buy',
           productName:item.name,
           fromStudent:item.sellerName,
-          amount:item.price,
+          depositUsed:depositUsed,
+          couponUsed:usedCoupon,
+          totalAmount:item.price,
           ts:Date.now()
         });
         return hist;
