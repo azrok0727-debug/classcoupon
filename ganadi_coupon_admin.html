@@ -291,6 +291,12 @@ function render(){
       <button class="tab ${activeTab==='products'?'active':''}" data-tab="products">
         <div class="tab-icon">📦</div><div class="tab-label">상품관리</div>
       </button>
+      <button class="tab ${activeTab==='realEstate'?'active':''}" data-tab="realEstate">
+        <div class="tab-icon">🏠</div><div class="tab-label">부동산</div>
+      </button>
+      <button class="tab ${activeTab==='cars'?'active':''}" data-tab="cars">
+        <div class="tab-icon">🚗</div><div class="tab-label">자동차</div>
+      </button>
       <button class="tab ${activeTab==='give'?'active':''}" data-tab="give">
         <div class="tab-icon">🎁</div><div class="tab-label">쿠폰지급</div>
       </button>
@@ -313,6 +319,8 @@ function render(){
 function renderTabContent(){
   const $c = document.getElementById('tab-content');
   if(activeTab==='products') renderProducts($c);
+  else if(activeTab==='realEstate') renderRealEstate($c);
+  else if(activeTab==='cars') renderCars($c);
   else if(activeTab==='give') renderGive($c);
   else if(activeTab==='students') renderStudents($c);
   else if(activeTab==='resell') renderResell($c);
@@ -357,6 +365,92 @@ function renderProducts($c){
       const id = b.dataset.deleteProduct;
       const p = products.find(x=>x.id===id);
       if(p) confirmDeleteProduct(p);
+    });
+  });
+}
+
+function renderRealEstate($c){
+  const items = Object.entries(fbState.couponShop?.realEstate||{})
+    .map(([id,item])=>({id,...item}))
+    .filter(item=>item && item.name)
+    .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+
+  $c.innerHTML = `
+    <div class="section-head">
+      <h2 class="section-title">부동산 관리</h2>
+      <button class="btn-add" id="btn-add-realestate">＋ 등록</button>
+    </div>
+    ${items.length===0
+      ? `<div class="empty"><div class="empty-icon">🏠</div><div class="empty-text">등록된 부동산이 없습니다</div></div>`
+      : `<div class="list">${items.map(item=>`
+          <div class="item">
+            <div class="item-img" style="background-size:cover;background-position:center;background-image:url('${item.image||''}');">${!item.image?'🏠':''}</div>
+            <div class="item-info">
+              <div class="item-name">${item.name}</div>
+              <div class="item-meta">${fmt(item.price)}점<span>·</span>재고 ${item.stock||0}개</div>
+            </div>
+            <button class="item-action edit" data-edit-realestate="${item.id}" title="수정">✏️</button>
+            <button class="item-action" data-delete-realestate="${item.id}" title="삭제">🗑️</button>
+          </div>
+        `).join('')}</div>`}
+  `;
+  
+  document.getElementById('btn-add-realestate').onclick = ()=>openAddRealEstateModal();
+  $c.querySelectorAll('[data-edit-realestate]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const id = b.dataset.editRealestate;
+      const item = items.find(x=>x.id===id);
+      if(item) openEditRealEstateModal(item);
+    });
+  });
+  $c.querySelectorAll('[data-delete-realestate]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const id = b.dataset.deleteRealestate;
+      const item = items.find(x=>x.id===id);
+      if(item) confirmDeleteRealEstate(item);
+    });
+  });
+}
+
+function renderCars($c){
+  const items = Object.entries(fbState.couponShop?.cars||{})
+    .map(([id,item])=>({id,...item}))
+    .filter(item=>item && item.name)
+    .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+
+  $c.innerHTML = `
+    <div class="section-head">
+      <h2 class="section-title">자동차 관리</h2>
+      <button class="btn-add" id="btn-add-cars">＋ 등록</button>
+    </div>
+    ${items.length===0
+      ? `<div class="empty"><div class="empty-icon">🚗</div><div class="empty-text">등록된 자동차가 없습니다</div></div>`
+      : `<div class="list">${items.map(item=>`
+          <div class="item">
+            <div class="item-img" style="background-size:cover;background-position:center;background-image:url('${item.image||''}');">${!item.image?'🚗':''}</div>
+            <div class="item-info">
+              <div class="item-name">${item.name}</div>
+              <div class="item-meta">${fmt(item.price)}점<span>·</span>재고 ${item.stock||0}개</div>
+            </div>
+            <button class="item-action edit" data-edit-cars="${item.id}" title="수정">✏️</button>
+            <button class="item-action" data-delete-cars="${item.id}" title="삭제">🗑️</button>
+          </div>
+        `).join('')}</div>`}
+  `;
+  
+  document.getElementById('btn-add-cars').onclick = ()=>openAddCarsModal();
+  $c.querySelectorAll('[data-edit-cars]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const id = b.dataset.editCars;
+      const item = items.find(x=>x.id===id);
+      if(item) openEditCarsModal(item);
+    });
+  });
+  $c.querySelectorAll('[data-delete-cars]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const id = b.dataset.deleteCars;
+      const item = items.find(x=>x.id===id);
+      if(item) confirmDeleteCars(item);
     });
   });
 }
@@ -425,12 +519,12 @@ function renderStudentList(){
     const sd = fbState.students?.[s.name] || {};
     const deposit = sd.deposit ?? 0;
     const coupons = sd.coupons || {};
-    const couponList = Object.values(coupons);
-    const couponCount = couponList.length;
+    const couponEntries = Object.entries(coupons).map(([id,c])=>({id,...c}));
+    const couponCount = couponEntries.length;
     const isOpen = expandedStudent === s.name;
 
     const grouped = {};
-    couponList.forEach(c=>{
+    couponEntries.forEach(c=>{
       const key = c.name;
       if(!grouped[key]) grouped[key] = { count:0, image:c.image };
       grouped[key].count++;
@@ -454,13 +548,13 @@ function renderStudentList(){
           ${couponCount===0
             ? `<div class="empty-mini">보유한 쿠폰이 없습니다</div>`
             : `<div class="coupon-summary-list">
-                ${couponList.map((c,idx)=>`
+                ${couponEntries.map(c=>`
                   <div class="coupon-summary-item">
                     <div class="coupon-summary-left">
                       <span style="font-size:18px;">${c.image||'🎁'}</span>
                       <span>${c.name}</span>
                     </div>
-                    <button class="btn-coupon-use" data-use="${c.id||idx}" data-student="${s.name}">사용</button>
+                    <button class="btn-coupon-use" data-use="${c.id}" data-student="${s.name}">사용</button>
                   </div>
                 `).join('')}
               </div>`}
@@ -519,20 +613,189 @@ function renderResell($c){
   });
 }
 
+// === 이미지 처리 ===
+function imageToBase64(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=>resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// === 부동산 관리 ===
+function openAddRealEstateModal(){
+  showModal(`
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">부동산 등록</h3>
+    <div class="field">
+      <label class="field-label">상품명</label>
+      <input type="text" class="field-input" id="name" placeholder="예: 강남역 빌딩">
+    </div>
+    <div class="field">
+      <label class="field-label">가격 (점)</label>
+      <input type="number" class="field-input" id="price" placeholder="예: 100000" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label class="field-label">재고</label>
+      <input type="number" class="field-input" id="stock" placeholder="예: 5" inputmode="numeric" value="1">
+    </div>
+    <div class="field">
+      <label class="field-label">사진 업로드</label>
+      <input type="file" class="field-input" id="image" accept="image/*" style="padding:10px;cursor:pointer;">
+      <div id="preview" style="margin-top:8px;width:100%;height:150px;background:var(--bg);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px;">사진 미리보기</div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
+      <button class="modal-btn modal-btn-confirm" id="m-confirm">등록</button>
+    </div>
+  `);
+  let imageBase64 = null;
+  document.getElementById('image').addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    if(file){
+      imageBase64 = await imageToBase64(file);
+      document.getElementById('preview').innerHTML = `<img src="${imageBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">`;
+    }
+  });
+  document.getElementById('m-cancel').onclick = closeModal;
+  document.getElementById('m-confirm').onclick = async ()=>{
+    const name = document.getElementById('name').value.trim();
+    const price = parseInt(document.getElementById('price').value);
+    const stock = parseInt(document.getElementById('stock').value) || 1;
+    if(!name || !price || price<=0 || !imageBase64){ showToast('모든 항목을 입력해주세요','error'); return; }
+    closeModal();
+    try {
+      const id = 'r_'+Date.now();
+      await set(ref(db,`state/couponShop/realEstate/${id}`),{name, price, stock, image:imageBase64, createdAt:Date.now()});
+      showToast('부동산이 등록되었습니다','success');
+    } catch(e){ console.error(e); showToast('등록 중 오류 발생','error'); }
+  };
+}
+
+function openEditRealEstateModal(item){
+  let imageBase64 = item.image;
+  showModal(`
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">부동산 수정</h3>
+    <div class="field"><label class="field-label">상품명</label><input type="text" class="field-input" id="name" value="${item.name}"></div>
+    <div class="field"><label class="field-label">가격 (점)</label><input type="number" class="field-input" id="price" value="${item.price}"></div>
+    <div class="field"><label class="field-label">재고</label><input type="number" class="field-input" id="stock" value="${item.stock||1}"></div>
+    <div class="field"><label class="field-label">사진 업로드</label><input type="file" class="field-input" id="image" accept="image/*" style="padding:10px;cursor:pointer;"><div id="preview" style="margin-top:8px;width:100%;height:150px;background-image:url('${imageBase64}');background-size:cover;background-position:center;border-radius:8px;"></div></div>
+    <div class="modal-actions"><button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button><button class="modal-btn modal-btn-confirm" id="m-confirm">수정</button></div>
+  `);
+  document.getElementById('image').addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    if(file){ imageBase64 = await imageToBase64(file); document.getElementById('preview').style.backgroundImage = `url('${imageBase64}')`; }
+  });
+  document.getElementById('m-cancel').onclick = closeModal;
+  document.getElementById('m-confirm').onclick = async ()=>{
+    const name = document.getElementById('name').value.trim();
+    const price = parseInt(document.getElementById('price').value);
+    const stock = parseInt(document.getElementById('stock').value) || 1;
+    if(!name || !price || price<=0){ showToast('모든 항목을 입력해주세요','error'); return; }
+    closeModal();
+    try { await update(ref(db,`state/couponShop/realEstate/${item.id}`),{name, price, stock, image:imageBase64}); showToast('부동산이 수정되었습니다','success'); }
+    catch(e){ console.error(e); showToast('수정 중 오류 발생','error'); }
+  };
+}
+
+function confirmDeleteRealEstate(item){
+  showModal(`<div class="modal-handle"></div><h3 class="modal-title">부동산 삭제</h3><p class="modal-text">${item.name}을(를) 삭제하시겠습니까?</p><div class="modal-actions"><button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button><button class="modal-btn modal-btn-danger" id="m-confirm">삭제</button></div>`);
+  document.getElementById('m-cancel').onclick = closeModal;
+  document.getElementById('m-confirm').onclick = async ()=>{ closeModal(); try { await remove(ref(db,`state/couponShop/realEstate/${item.id}`)); showToast('부동산이 삭제되었습니다','success'); } catch(e){ console.error(e); showToast('삭제 중 오류 발생','error'); } };
+}
+
+// === 자동차 관리 ===
+function openAddCarsModal(){
+  showModal(`
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">자동차 등록</h3>
+    <div class="field"><label class="field-label">상품명</label><input type="text" class="field-input" id="name" placeholder="예: BMW M4"></div>
+    <div class="field"><label class="field-label">가격 (점)</label><input type="number" class="field-input" id="price" placeholder="예: 50000" inputmode="numeric"></div>
+    <div class="field"><label class="field-label">재고</label><input type="number" class="field-input" id="stock" placeholder="예: 3" inputmode="numeric" value="1"></div>
+    <div class="field"><label class="field-label">사진 업로드</label><input type="file" class="field-input" id="image" accept="image/*" style="padding:10px;cursor:pointer;"><div id="preview" style="margin-top:8px;width:100%;height:150px;background:var(--bg);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px;">사진 미리보기</div></div>
+    <div class="modal-actions"><button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button><button class="modal-btn modal-btn-confirm" id="m-confirm">등록</button></div>
+  `);
+  let imageBase64 = null;
+  document.getElementById('image').addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    if(file){ imageBase64 = await imageToBase64(file); document.getElementById('preview').innerHTML = `<img src="${imageBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">`; }
+  });
+  document.getElementById('m-cancel').onclick = closeModal;
+  document.getElementById('m-confirm').onclick = async ()=>{
+    const name = document.getElementById('name').value.trim();
+    const price = parseInt(document.getElementById('price').value);
+    const stock = parseInt(document.getElementById('stock').value) || 1;
+    if(!name || !price || price<=0 || !imageBase64){ showToast('모든 항목을 입력해주세요','error'); return; }
+    closeModal();
+    try { const id = 'c_'+Date.now(); await set(ref(db,`state/couponShop/cars/${id}`),{name, price, stock, image:imageBase64, createdAt:Date.now()}); showToast('자동차가 등록되었습니다','success'); }
+    catch(e){ console.error(e); showToast('등록 중 오류 발생','error'); }
+  };
+}
+
+function openEditCarsModal(item){
+  let imageBase64 = item.image;
+  showModal(`
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">자동차 수정</h3>
+    <div class="field"><label class="field-label">상품명</label><input type="text" class="field-input" id="name" value="${item.name}"></div>
+    <div class="field"><label class="field-label">가격 (점)</label><input type="number" class="field-input" id="price" value="${item.price}"></div>
+    <div class="field"><label class="field-label">재고</label><input type="number" class="field-input" id="stock" value="${item.stock||1}"></div>
+    <div class="field"><label class="field-label">사진 업로드</label><input type="file" class="field-input" id="image" accept="image/*" style="padding:10px;cursor:pointer;"><div id="preview" style="margin-top:8px;width:100%;height:150px;background-image:url('${imageBase64}');background-size:cover;background-position:center;border-radius:8px;"></div></div>
+    <div class="modal-actions"><button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button><button class="modal-btn modal-btn-confirm" id="m-confirm">수정</button></div>
+  `);
+  document.getElementById('image').addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    if(file){ imageBase64 = await imageToBase64(file); document.getElementById('preview').style.backgroundImage = `url('${imageBase64}')`; }
+  });
+  document.getElementById('m-cancel').onclick = closeModal;
+  document.getElementById('m-confirm').onclick = async ()=>{
+    const name = document.getElementById('name').value.trim();
+    const price = parseInt(document.getElementById('price').value);
+    const stock = parseInt(document.getElementById('stock').value) || 1;
+    if(!name || !price || price<=0){ showToast('모든 항목을 입력해주세요','error'); return; }
+    closeModal();
+    try { await update(ref(db,`state/couponShop/cars/${item.id}`),{name, price, stock, image:imageBase64}); showToast('자동차가 수정되었습니다','success'); }
+    catch(e){ console.error(e); showToast('수정 중 오류 발생','error'); }
+  };
+}
+
+function confirmDeleteCars(item){
+  showModal(`<div class="modal-handle"></div><h3 class="modal-title">자동차 삭제</h3><p class="modal-text">${item.name}을(를) 삭제하시겠습니까?</p><div class="modal-actions"><button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button><button class="modal-btn modal-btn-danger" id="m-confirm">삭제</button></div>`);
+  document.getElementById('m-cancel').onclick = closeModal;
+  document.getElementById('m-confirm').onclick = async ()=>{ closeModal(); try { await remove(ref(db,`state/couponShop/cars/${item.id}`)); showToast('자동차가 삭제되었습니다','success'); } catch(e){ console.error(e); showToast('삭제 중 오류 발생','error'); } };
+}
+
 // === Modals & Actions ===
 let selEmoji = '🎁';
 function openAddProductModal(){
   selEmoji = '🎁';
+  let uploadedImage = null;
   const emojis = ['🎁','📚','🍪','🍭','🪑','🎵','🎮','⚽','🏆','✏️','🎨','🍰','☕','🎟️','⭐','💎'];
-  showModal(`
-    <div class="modal-handle"></div>
-    <h3 class="modal-title">상품 등록</h3>
+  const imageUI = activeCategory === 'coupon' ? `
     <div class="field">
       <label class="field-label">상품 아이콘</label>
       <div class="emoji-grid" id="emoji-grid">
         ${emojis.map(e=>`<button class="emoji-btn ${e===selEmoji?'selected':''}" data-emoji="${e}">${e}</button>`).join('')}
       </div>
     </div>
+  ` : `
+    <div class="field">
+      <label class="field-label">상품 사진</label>
+      <div class="image-upload-zone" id="upload-zone">
+        <div style="font-size:24px;margin-bottom:8px;">📸</div>
+        <div style="font-size:12px;color:var(--text3);">클릭하여 사진 업로드</div>
+        <input type="file" id="image-input" accept="image/*" style="display:none;">
+      </div>
+      <img id="image-preview" class="image-preview" src="">
+    </div>
+  `;
+  
+  showModal(`
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">상품 등록</h3>
+    ${imageUI}
     <div class="field">
       <label class="field-label">상품명</label>
       <input type="text" class="field-input" id="p-name" placeholder="예: 숙제 면제권">
@@ -550,32 +813,48 @@ function openAddProductModal(){
       <button class="modal-btn modal-btn-confirm" id="m-confirm">등록하기</button>
     </div>
   `);
-  document.querySelectorAll('#emoji-grid .emoji-btn').forEach(b=>{
-    b.onclick = ()=>{
-      selEmoji = b.dataset.emoji;
-      document.querySelectorAll('#emoji-grid .emoji-btn').forEach(x=>x.classList.toggle('selected', x.dataset.emoji===selEmoji));
-    };
-  });
+  
+  if(activeCategory === 'coupon'){
+    document.querySelectorAll('#emoji-grid .emoji-btn').forEach(b=>{
+      b.onclick = ()=>{
+        selEmoji = b.dataset.emoji;
+        document.querySelectorAll('#emoji-grid .emoji-btn').forEach(x=>x.classList.toggle('selected', x.dataset.emoji===selEmoji));
+      };
+    });
+  } else {
+    const uploadZone = document.getElementById('upload-zone');
+    const imageInput = document.getElementById('image-input');
+    const imagePreview = document.getElementById('image-preview');
+    
+    uploadZone.addEventListener('click', ()=>imageInput.click());
+    uploadZone.addEventListener('dragover', e=>{e.preventDefault();uploadZone.classList.add('active');});
+    uploadZone.addEventListener('dragleave', ()=>uploadZone.classList.remove('active'));
+    uploadZone.addEventListener('drop', e=>{e.preventDefault();uploadZone.classList.remove('active');handleImageUpload(e.dataTransfer.files[0]);});
+    imageInput.addEventListener('change', e=>handleImageUpload(e.target.files[0]));
+    
+    function handleImageUpload(file){
+      if(!file || !file.type.startsWith('image/')) {showToast('이미지 파일만 업로드 가능합니다','error');return;}
+      const reader = new FileReader();
+      reader.onload = (e)=>{uploadedImage = e.target.result;imagePreview.src = uploadedImage;imagePreview.classList.add('show');uploadZone.style.opacity = '0.5';};
+      reader.readAsDataURL(file);
+    }
+  }
+  
   document.getElementById('m-cancel').onclick = closeModal;
   document.getElementById('m-confirm').onclick = async ()=>{
     const name = document.getElementById('p-name').value.trim();
     const price = parseInt(document.getElementById('p-price').value);
     const stock = parseInt(document.getElementById('p-stock').value);
-    if(!name || !price || price<=0 || isNaN(stock) || stock<0){
-      showToast('모든 항목을 올바르게 입력해주세요','error');
-      return;
-    }
+    if(activeCategory !== 'coupon' && !uploadedImage){showToast('사진을 업로드해주세요','error');return;}
+    if(!name || !price || price<=0 || isNaN(stock) || stock<0){showToast('모든 항목을 올바르게 입력해주세요','error');return;}
     closeModal();
     try {
       const pid = 'p_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
-      await set(ref(db,`state/couponShop/products/${pid}`),{
-        name, price, stock, image:selEmoji, createdAt:Date.now()
-      });
+      const image = activeCategory === 'coupon' ? selEmoji : uploadedImage;
+      await set(ref(db,`state/couponShop/products/${pid}`),{name, price, stock, image, category:activeCategory, createdAt:Date.now()});
       showToast('상품이 등록되었습니다','success');
-    } catch(e){
-      console.error(e);
-      showToast('등록 중 오류 발생','error');
-    }
+      render();
+    } catch(e){console.error(e);showToast('등록 중 오류 발생','error');}
   };
 }
 
@@ -583,16 +862,32 @@ let editingProduct = null;
 function openEditProductModal(p){
   editingProduct = p;
   let selEmoji = p.image || '🎁';
+  let uploadedImage = null;
   const emojis = ['🎁','📚','🍪','🍭','🪑','🎵','🎮','⚽','🏆','✏️','🎨','🍰','☕','🎟️','⭐','💎'];
-  showModal(`
-    <div class="modal-handle"></div>
-    <h3 class="modal-title">상품 수정</h3>
+  const isEmojiImage = !p.image?.startsWith('data:image');
+  const imageUI = (p.category||'coupon') === 'coupon' ? `
     <div class="field">
       <label class="field-label">상품 아이콘</label>
       <div class="emoji-grid" id="emoji-grid">
         ${emojis.map(e=>`<button class="emoji-btn ${e===selEmoji?'selected':''}" data-emoji="${e}">${e}</button>`).join('')}
       </div>
     </div>
+  ` : `
+    <div class="field">
+      <label class="field-label">상품 사진</label>
+      <div class="image-upload-zone" id="upload-zone">
+        <div style="font-size:24px;margin-bottom:8px;">📸</div>
+        <div style="font-size:12px;color:var(--text3);">클릭하여 사진 업로드</div>
+        <input type="file" id="image-input" accept="image/*" style="display:none;">
+      </div>
+      <img id="image-preview" class="image-preview ${isEmojiImage?'':'show'}" src="${isEmojiImage?'':p.image}" alt="">
+    </div>
+  `;
+  
+  showModal(`
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">상품 수정</h3>
+    ${imageUI}
     <div class="field">
       <label class="field-label">상품명</label>
       <input type="text" class="field-input" id="p-name" placeholder="예: 숙제 면제권" value="${p.name}">
@@ -610,12 +905,48 @@ function openEditProductModal(p){
       <button class="modal-btn modal-btn-confirm" id="m-confirm">수정하기</button>
     </div>
   `);
-  document.querySelectorAll('#emoji-grid .emoji-btn').forEach(b=>{
-    b.onclick = ()=>{
-      selEmoji = b.dataset.emoji;
-      document.querySelectorAll('#emoji-grid .emoji-btn').forEach(x=>x.classList.toggle('selected', x.dataset.emoji===selEmoji));
-    };
-  });
+  
+  if((p.category||'coupon') === 'coupon'){
+    document.querySelectorAll('#emoji-grid .emoji-btn').forEach(b=>{
+      b.onclick = ()=>{
+        selEmoji = b.dataset.emoji;
+        document.querySelectorAll('#emoji-grid .emoji-btn').forEach(x=>x.classList.toggle('selected', x.dataset.emoji===selEmoji));
+      };
+    });
+  } else {
+    const uploadZone = document.getElementById('upload-zone');
+    const imageInput = document.getElementById('image-input');
+    const imagePreview = document.getElementById('image-preview');
+    
+    uploadZone.addEventListener('click', ()=>imageInput.click());
+    uploadZone.addEventListener('dragover', e=>{
+      e.preventDefault();
+      uploadZone.classList.add('active');
+    });
+    uploadZone.addEventListener('dragleave', ()=>uploadZone.classList.remove('active'));
+    uploadZone.addEventListener('drop', e=>{
+      e.preventDefault();
+      uploadZone.classList.remove('active');
+      handleImageUpload(e.dataTransfer.files[0]);
+    });
+    imageInput.addEventListener('change', e=>handleImageUpload(e.target.files[0]));
+    
+    function handleImageUpload(file){
+      if(!file || !file.type.startsWith('image/')) {
+        showToast('이미지 파일만 업로드 가능합니다','error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e)=>{
+        uploadedImage = e.target.result;
+        imagePreview.src = uploadedImage;
+        imagePreview.classList.add('show');
+        uploadZone.style.opacity = '0.5';
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+  
   document.getElementById('m-cancel').onclick = closeModal;
   document.getElementById('m-confirm').onclick = async ()=>{
     const name = document.getElementById('p-name').value.trim();
@@ -627,10 +958,12 @@ function openEditProductModal(p){
     }
     closeModal();
     try {
+      const image = (p.category||'coupon') === 'coupon' ? selEmoji : (uploadedImage || p.image);
       await update(ref(db,`state/couponShop/products/${p.id}`),{
-        name, price, stock, image:selEmoji
+        name, price, stock, image
       });
       showToast('상품이 수정되었습니다','success');
+      render();
     } catch(e){
       console.error(e);
       showToast('수정 중 오류 발생','error');
