@@ -437,7 +437,8 @@ function renderResell($c){
 
 function resellCard(item){
   const isOwn = item.sellerName === currentUser;
-  const daysLeft = item.expiresAt ? Math.ceil((item.expiresAt - Date.now()) / (24*3600*1000)) : 0;
+  const SAFETY_MARGIN = 5000; // 다른 필터링과 동일하게 5초 마진
+  const daysLeft = item.expiresAt ? Math.ceil((item.expiresAt - Date.now() - SAFETY_MARGIN) / (24*3600*1000)) : 0;
   const expireStyle = daysLeft <= 1 ? 'color:var(--danger);font-weight:700;' : 'color:var(--text3);';
   return `
     <div class="product-card">
@@ -501,7 +502,8 @@ function renderMyCoupons($c){
 
 function couponItem(c, isExpired){
   const date = c.acquiredAt ? new Date(c.acquiredAt).toLocaleDateString('ko-KR') : '';
-  const daysLeft = c.expiresAt ? Math.ceil((c.expiresAt - Date.now()) / (24*3600*1000)) : 0;
+  const SAFETY_MARGIN = 5000; // 다른 필터링과 동일하게 5초 마진
+  const daysLeft = c.expiresAt ? Math.ceil((c.expiresAt - Date.now() - SAFETY_MARGIN) / (24*3600*1000)) : 0;
   const expireText = isExpired ? '만료됨' : daysLeft > 0 ? `${daysLeft}일 남음` : '만료됨';
   const expireStyle = isExpired || daysLeft <= 0 ? 'color:var(--danger);' : daysLeft <= 1 ? 'color:var(--danger);font-weight:700;' : 'color:var(--text3);';
   return `
