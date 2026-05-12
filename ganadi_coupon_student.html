@@ -337,8 +337,6 @@ function renderTabContent(){
   if(activeTab==='shop') renderShop($c);
   else if(activeTab==='resell') renderResell($c);
   else if(activeTab==='mycoupons') renderMyCoupons($c);
-}
-
 function renderShop($c){
   const products = Object.entries(fbState.couponShop.products||{})
     .map(([id,p])=>({id,...p}))
@@ -393,13 +391,14 @@ function productCard(p){
 
 function renderResell($c){
   const now = Date.now();
+  const SAFETY_MARGIN = 5000; // 5초 마진
   let allItems = Object.entries(fbState.couponShop.resell||{})
     .map(([id,r])=>({id,...r}))
     .filter(r=>r && r.name);
   
   // 만료된 상품 자동 삭제
-  const validItems = allItems.filter(r=>(r.expiresAt||0) > now);
-  const expiredIds = allItems.filter(r=>(r.expiresAt||0) <= now).map(r=>r.id);
+  const validItems = allItems.filter(r=>(r.expiresAt||0) > (now + SAFETY_MARGIN));
+  const expiredIds = allItems.filter(r=>(r.expiresAt||0) <= (now + SAFETY_MARGIN)).map(r=>r.id);
   
   if(expiredIds.length > 0){
     expiredIds.forEach(id=>{
@@ -463,12 +462,13 @@ function resellCard(item){
 function renderMyCoupons($c){
   const stuRef = fbState.students?.[currentUser];
   const now = Date.now();
+  const SAFETY_MARGIN = 5000; // 5초 마진
   const allCoupons = Object.entries(stuRef?.coupons||{})
     .map(([id,c])=>({id,...c}))
     .filter(c=>c && c.name);
   
-  const validCoupons = allCoupons.filter(c=>(c.expiresAt||0) > now);
-  const expiredCoupons = allCoupons.filter(c=>(c.expiresAt||0) <= now);
+  const validCoupons = allCoupons.filter(c=>(c.expiresAt||0) > (now + SAFETY_MARGIN));
+  const expiredCoupons = allCoupons.filter(c=>(c.expiresAt||0) <= (now + SAFETY_MARGIN));
   
   const validHtml = validCoupons.length === 0
     ? ''
@@ -496,6 +496,7 @@ function renderMyCoupons($c){
       if(c) openSellModal(c);
     });
   });
+}
 }
 
 function couponItem(c, isExpired){
