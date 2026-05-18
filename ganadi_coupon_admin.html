@@ -291,12 +291,6 @@ function render(){
       <button class="tab ${activeTab==='products'?'active':''}" data-tab="products">
         <div class="tab-icon">📦</div><div class="tab-label">상품관리</div>
       </button>
-      <button class="tab ${activeTab==='realEstate'?'active':''}" data-tab="realEstate">
-        <div class="tab-icon">🏠</div><div class="tab-label">부동산</div>
-      </button>
-      <button class="tab ${activeTab==='cars'?'active':''}" data-tab="cars">
-        <div class="tab-icon">🚗</div><div class="tab-label">자동차</div>
-      </button>
       <button class="tab ${activeTab==='give'?'active':''}" data-tab="give">
         <div class="tab-icon">🎁</div><div class="tab-label">쿠폰지급</div>
       </button>
@@ -319,10 +313,8 @@ function render(){
 function renderTabContent(){
   const $c = document.getElementById('tab-content');
   if(activeTab==='products') renderProducts($c);
-  else if(activeTab==='realEstate') renderRealEstate($c);
-  else if(activeTab==='cars') renderCars($c);
   else if(activeTab==='give') renderGive($c);
-  else if(activeTab==='students') renderStudents($c);
+  else if(activeTab==='students') renderStudentList();
   else if(activeTab==='resell') renderResell($c);
 }
 
@@ -512,11 +504,170 @@ function confirmCancelResell(item){
   };
 }
 
+function renderGive($c){
+  const products = Object.entries(fbState.couponShop.products||{})
+    .map(([id,p])=>({id,...p}))
+    .filter(p=>p && p.name);
+
+  $c.innerHTML = `
+    <div class="section-head">
+      <h2 class="section-title">쿠폰 지급</h2>
+    </div>
+    <div class="field">
+      <label class="field-label">학생 선택</label>
+      <div id="student-select" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;">
+        ${ALL_STUDENTS.map(s=>`<button class="student-btn" data-student="${s.name}" style="padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text1);cursor:pointer;">${s.name}</button>`).join('')}
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">상품 선택</label>
+      <div id="product-select" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:8px;">
+        ${products.map(p=>`<button class="product-btn" data-product="${p.id}" style="padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;text-align:center;"><div style="font-size:20px;">${p.image||'🎁'}</div><div style="font-size:9px;margin-top:4px;color:var(--text3);">${p.name}</div></button>`).join('')}
+      </div>
+    </div>
+    <button id="btn-give" style="width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;margin-top:16px;">지급하기</button>
+  `;
+  
+  let giveTarget = null, giveProduct = null;
+  
+  document.querySelectorAll('#student-select [data-student]').forEach(b=>{
+    b.onclick = ()=>{
+      giveTarget = b.dataset.student;
+      document.querySelectorAll('#student-select [data-student]').forEach(x=>x.style.background = x.dataset.student===giveTarget ? 'var(--gold)' : 'var(--surface)');
+    };
+  });
+  
+  document.querySelectorAll('#product-select [data-product]').forEach(b=>{
+    b.onclick = ()=>{
+      giveProduct = products.find(x=>x.id===b.dataset.product);
+      document.querySelectorAll('#product-select [data-product]').forEach(x=>x.style.background = x.dataset.product===b.dataset.product ? 'var(--gold)' : 'var(--surface)');
+    };
+  });
+  
+  document.getElementById('btn-give').onclick = async ()=>{
+    if(!giveTarget || !giveProduct){ showToast('학생과 상품을 모두 선택해주세요','error'); return; }
+    try {
+      await runTransaction(ref(db,`state/students/${giveTarget}`), cur=>{
+        if(!cur) cur = { deposit:0 };
+        if(!cur.coupons) cur.coupons = {};
+        const cid = 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+        cur.coupons[cid] = {
+          name:giveProduct.name,
+          image:giveProduct.image,
+          originalPrice:giveProduct.price,
+          productId:giveProduct.id,
+          acquiredAt:Date.now(),
+          gifted:true,
+          expiresAt:Date.now() + 7*24*3600*1000
+        };
+        return cur;
+      });
+      showToast(`${giveTarget}님께 ${giveProduct.name} 지급 완료`,'success');
+      giveTarget = null; giveProduct = null;
+      renderGive($c);
+    } catch(e){
+      console.error(e);
+      showToast('지급 중 오류 발생','error');
+    }
+  };
+}
+
+function renderStudentList(){
+  const $list = document.getElementById('tab-content');
+  const filtered = ALL_STUDENTS.filter(s=>s.name.includes(searchQuery));
+
+  $list.innerHTML = `
+    <div style="margin-bottom:16px;">
+      <input type="text" id="search-input" placeholder="학생명 검색" style="width:100%;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text1);">
+    </div>
+    <div id="student-list"></div>
+  `;
+  
+  const $studentList = document.getElementById('student-list');
+  $studentList.innerHTML = filtered.map(s=>{
+    const sd = fbState.students?.[s.name] || {};
+    const deposit = sd.deposit ?? 0;
+    const coupons = Object.entries(sd.coupons||{}).map(([id,c])=>({id,...c}));
+    const couponCount = coupons.length;
+    return `
+      <div class="student-card" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" data-toggle="${s.name}">
+          <div><strong>${s.name}</strong> <span style="color:var(--text3);font-size:12px;">${s.group}모둠</span></div>
+          <div style="text-align:right;font-size:12px;color:var(--text3);">
+            <div>예금 ${fmt(deposit)}점</div>
+            <div>쿠폰 ${couponCount}장</div>
+          </div>
+        </div>
+        <div class="student-detail" style="margin-top:12px;display:none;">
+          ${couponCount===0 ? '<div style="color:var(--text3);font-size:12px;">보유한 쿠폰이 없습니다</div>' : coupons.map(c=>`
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--border);">
+              <div><span style="font-size:14px;margin-right:8px;">${c.image||'🎁'}</span>${c.name}</div>
+              <button class="btn-coupon-use" data-use="${c.id}" data-student="${s.name}" style="padding:4px 8px;background:rgba(16,185,129,0.15);color:#10b981;border:none;border-radius:4px;font-size:11px;cursor:pointer;">사용</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  $list.querySelectorAll('[data-toggle]').forEach(h=>{
+    h.addEventListener('click', ()=>{
+      const detail = h.nextElementSibling;
+      detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+    });
+  });
+  
+  $list.querySelectorAll('[data-use]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const couponId = b.dataset.use;
+      const studentName = b.dataset.student;
+      confirmUseCoupon(studentName, couponId);
+    });
+  });
+  
+  document.getElementById('search-input').addEventListener('input', (e)=>{
+    searchQuery = e.target.value;
+    renderStudentList();
+  });
+}
+
+function renderResell($c){
+  const items = Object.entries(fbState.couponShop.resell||{})
+    .map(([id,r])=>({id,...r}))
+    .filter(r=>r && r.name);
+
+  $c.innerHTML = `
+    <div class="section-head">
+      <h2 class="section-title">리셀샵 모니터링</h2>
+      <span class="section-count">${items.length}개 등록</span>
+    </div>
+    ${items.length===0 ? '<div class="empty" style="text-align:center;padding:32px;color:var(--text3);">등록된 상품이 없습니다</div>' : items.map(item=>`
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;">
+          <div><span style="font-size:16px;margin-right:8px;">${item.image||'🎁'}</span><strong>${item.name}</strong></div>
+          <button class="btn-cancel-resell" data-id="${item.id}" style="padding:4px 8px;background:rgba(239,68,68,0.15);color:#ef4444;border:none;border-radius:4px;font-size:11px;cursor:pointer;">취소</button>
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-top:8px;">
+          <div>판매자: ${item.sellerName}</div>
+          <div>가격: ${fmt(item.price)}점</div>
+        </div>
+      </div>
+    `).join('')}
+  `;
+  
+  $c.querySelectorAll('[data-id]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const item = items.find(x=>x.id===b.dataset.id);
+      if(item) confirmCancelResell(item);
+    });
+  });
+}
+
 function confirmUseCoupon(studentName, couponId){
   showModal(`
     <div class="modal-handle"></div>
     <h3 class="modal-title">쿠폰 사용</h3>
-    <p class="modal-text">${studentName}님의 쿠폰을 사용 처리하시겠습니까?\n삭제되며 복구할 수 없습니다.</p>
+    <p class="modal-text">${studentName}님의 쿠폰을 사용 처리하시겠습니까?</p>
     <div class="modal-actions">
       <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
       <button class="modal-btn modal-btn-danger" id="m-confirm">사용 처리</button>
@@ -535,6 +686,7 @@ function confirmUseCoupon(studentName, couponId){
     }
   };
 }
+
 
 render();
 </script>
