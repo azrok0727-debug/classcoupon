@@ -4,8 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>가나디쿠폰샵 관리자</title>
-
-<!-- PWA -->
 <link rel="manifest" href="manifest_admin.json">
 <meta name="theme-color" content="#0c0a09">
 <meta name="mobile-web-app-capable" content="yes">
@@ -13,165 +11,125 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="쿠폰샵 관리자">
 <link rel="icon" type="image/png" sizes="32x32" href="icon_admin_32.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon_admin_192.png">
 <link rel="apple-touch-icon" href="icon_admin_180.png">
-<link rel="apple-touch-icon" sizes="180x180" href="icon_admin_180.png">
 <style>
 :root{
-  --bg:#0c0a09;
-  --bg2:#171513;
-  --surface:#22201d;
-  --surface2:#2d2a26;
-  --border:rgba(255,255,255,0.08);
-  --text1:#fafaf9;
-  --text2:rgba(250,250,249,0.65);
-  --text3:rgba(250,250,249,0.4);
-  --gold:#f59e0b;
-  --gold2:#fbbf24;
-  --danger:#ef4444;
-  --success:#10b981;
-  --radius:12px;
-  --radius-lg:20px;
+  --bg:#0c0a09;--bg2:#171513;--surface:#22201d;--surface2:#2d2a26;
+  --border:rgba(255,255,255,0.08);--text1:#fafaf9;--text2:rgba(250,250,249,0.65);
+  --text3:rgba(250,250,249,0.4);--gold:#f59e0b;--gold2:#fbbf24;
+  --danger:#ef4444;--success:#10b981;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--text1);font-family:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;}
-body{min-height:100vh;padding-top:env(safe-area-inset-top);padding-bottom:calc(90px + env(safe-area-inset-bottom));padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text1);
+  font-family:'Apple SD Gothic Neo',-apple-system,sans-serif;font-size:14px;}
+body{padding-bottom:calc(80px + env(safe-area-inset-bottom));
+  padding-top:env(safe-area-inset-top);}
 button{font-family:inherit;cursor:pointer;}
 input{font-family:inherit;}
 
-.header{padding:calc(12px + env(safe-area-inset-top)) 20px 8px;display:flex;justify-content:space-between;align-items:center;}
-.header-left{display:flex;align-items:center;gap:10px;}
-.logo{width:36px;height:36px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff;}
-.brand-sub{font-size:10px;color:var(--text3);letter-spacing:1.5px;font-weight:600;}
+.header{padding:calc(12px + env(safe-area-inset-top)) 20px 10px;
+  display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--border);}
 .brand-name{font-size:15px;font-weight:800;}
-.admin-badge{background:rgba(245,158,11,0.15);color:var(--gold2);padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:0.5px;}
+.header-stats{display:flex;gap:14px;}
+.stat{text-align:center;}
+.stat-label{font-size:9px;color:var(--text3);}
+.stat-value{font-size:14px;font-weight:800;color:var(--gold2);}
 
-/* Stats */
-.stats-section{padding:12px 20px 0;}
-.stats-card{background:linear-gradient(135deg,#3d2c0a 0%,#5a3f10 50%,#3d2c0a 100%);border-radius:var(--radius-lg);padding:20px;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.4);}
-.stats-card::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(245,158,11,0.08);}
-.stats-title{font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:14px;letter-spacing:0.5px;position:relative;z-index:1;}
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;position:relative;z-index:1;}
-.stat-item{}
-.stat-value{font-size:22px;font-weight:900;color:#fff;letter-spacing:-0.5px;}
-.stat-value span{font-size:11px;font-weight:600;opacity:.7;margin-left:2px;}
-.stat-label{font-size:10px;color:rgba(255,255,255,0.55);margin-top:2px;}
+.content{padding:16px 20px;}
 
-.content{padding:20px;}
 .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
 .section-title{font-size:18px;font-weight:800;margin:0;}
 .section-count{font-size:12px;color:var(--text3);}
 
-.btn-add{display:flex;align-items:center;gap:4px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;padding:8px 14px;border-radius:10px;font-size:12px;font-weight:700;}
+.btn-add{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;
+  border:none;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:700;}
 
-/* Search */
-.search-bar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 14px;display:flex;align-items:center;gap:8px;margin-bottom:12px;}
-.search-bar input{flex:1;border:none;background:none;outline:none;color:var(--text1);font-size:13px;padding:11px 0;}
-.search-bar svg{flex-shrink:0;}
-
-/* List items */
 .list{display:flex;flex-direction:column;gap:8px;}
-.item{background:var(--surface);border-radius:14px;padding:13px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);}
-.item-img{width:48px;height:48px;background:var(--surface2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
-.item-img.gold{background:linear-gradient(135deg,#3d2c0a,#5a3f10);}
-.item-info{flex:1;min-width:0;}
+.item{background:var(--surface);border-radius:14px;padding:13px;
+  display:flex;align-items:center;gap:12px;border:1px solid var(--border);}
+.item-img{width:48px;height:48px;background:var(--surface2);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.item-info{flex:1;}
 .item-name{font-size:14px;font-weight:700;margin-bottom:2px;}
 .item-meta{font-size:11px;color:var(--text3);}
-.item-meta span{margin:0 4px;}
-.item-action{background:rgba(239,68,68,0.15);color:var(--danger);border:none;padding:8px;border-radius:8px;display:flex;align-items:center;justify-content:center;}
-.item-action.gold{background:rgba(245,158,11,0.15);color:var(--gold2);}
-.item-action.edit{background:rgba(59,130,246,0.15);color:#3b82f6;margin-right:6px;}
+.item-action{border:none;padding:8px;border-radius:8px;font-size:14px;margin-left:4px;}
+.item-action.edit{background:rgba(59,130,246,0.15);color:#3b82f6;}
+.item-action.del{background:rgba(239,68,68,0.15);color:var(--danger);}
 
-/* Student card */
-.student-card{background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;}
-.student-header{padding:13px;display:flex;align-items:center;gap:12px;cursor:pointer;}
-.student-avatar{width:42px;height:42px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0;}
-.student-info{flex:1;min-width:0;}
-.student-name{font-size:14px;font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:6px;}
-.student-group-tag{font-size:9px;background:rgba(245,158,11,0.2);color:var(--gold2);padding:2px 6px;border-radius:4px;font-weight:700;}
-.student-meta{font-size:11px;color:var(--text3);display:flex;gap:8px;align-items:center;}
-.student-meta .deposit{font-weight:600;}
-.student-meta .coupons{color:var(--gold2);font-weight:600;}
-.chevron{color:var(--text3);transition:transform 0.2s;}
-.chevron.open{transform:rotate(90deg);}
-.student-detail{background:var(--bg2);padding:12px;border-top:1px solid var(--border);display:none;}
-.student-detail.open{display:block;}
-.coupon-summary-list{display:flex;flex-direction:column;gap:6px;}
-.coupon-summary-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-radius:8px;}
-.coupon-summary-left{display:flex;align-items:center;gap:8px;}
-.coupon-summary-left span{font-size:13px;font-weight:600;}
-.coupon-count-badge{font-size:11px;font-weight:700;color:var(--gold2);background:rgba(245,158,11,0.15);padding:3px 10px;border-radius:10px;}
-.btn-coupon-use{background:rgba(16,185,129,0.15);color:var(--success);border:none;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;}
-.empty-mini{font-size:12px;color:var(--text3);text-align:center;padding:14px 0;}
-
-/* Big action button */
-.action-button{width:100%;padding:18px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px;}
-.section-subtitle{font-size:13px;font-weight:700;color:var(--text2);margin:0 0 12px;}
-
-/* Empty */
-.empty{background:var(--surface);border-radius:var(--radius-lg);padding:60px 20px;text-align:center;border:1px solid var(--border);}
-.empty-icon{font-size:44px;margin-bottom:10px;opacity:0.5;}
-.empty-text{font-size:13px;color:var(--text3);}
-
-/* Tabs */
-.tabbar{position:fixed;bottom:0;left:0;right:0;background:rgba(23,21,19,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:8px 0 calc(12px + env(safe-area-inset-bottom));z-index:50;}
-.tab{flex:1;background:none;border:none;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text3);}
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:rgba(23,21,19,0.97);
+  backdrop-filter:blur(20px);border-top:1px solid var(--border);
+  display:flex;padding:8px 0 calc(10px + env(safe-area-inset-bottom));z-index:50;}
+.tab{flex:1;background:none;border:none;padding:6px 0;
+  display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text3);}
 .tab.active{color:var(--gold2);}
 .tab-icon{font-size:20px;}
-.tab-label{font-size:11px;font-weight:600;}
+.tab-label{font-size:10px;font-weight:600;}
 
-/* Modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center;z-index:100;}
-.modal-overlay.show{display:flex;animation:fadeIn 0.2s;}
-.modal-panel{background:var(--bg2);border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:28px 22px 32px;animation:slideUp 0.25s ease;border-top:1px solid var(--border);max-height:85vh;overflow-y:auto;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);
+  display:none;align-items:flex-end;justify-content:center;z-index:100;}
+.modal-overlay.show{display:flex;}
+.modal-panel{background:var(--bg2);border-radius:24px 24px 0 0;width:100%;
+  max-width:480px;padding:24px 20px calc(32px + env(safe-area-inset-bottom));
+  max-height:85vh;overflow-y:auto;border-top:1px solid var(--border);}
 .modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px;}
 .modal-title{font-size:18px;font-weight:800;margin:0 0 16px;}
-.modal-text{font-size:13px;color:var(--text2);margin:0 0 20px;line-height:1.6;white-space:pre-line;}
+.modal-text{font-size:13px;color:var(--text2);margin:0 0 20px;line-height:1.6;}
 .modal-actions{display:flex;gap:8px;margin-top:20px;}
 .modal-btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:700;}
 .modal-btn-cancel{background:var(--surface);color:var(--text2);}
 .modal-btn-confirm{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;}
-.modal-btn-danger{background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;}
+.modal-btn-danger{background:var(--danger);color:#fff;}
 
 .field{margin-bottom:14px;}
 .field-label{font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px;}
-.field-input{width:100%;padding:13px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:14px;color:var(--text1);outline:none;}
-.field-input:focus{border-color:var(--gold);}
+.field-input{width:100%;padding:13px;background:var(--surface);
+  border:1px solid var(--border);border-radius:10px;font-size:14px;color:var(--text1);outline:none;}
 
 .emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;}
-.emoji-btn{aspect-ratio:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:20px;}
+.emoji-btn{aspect-ratio:1;background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;font-size:18px;padding:0;}
 .emoji-btn.selected{background:var(--gold);border-color:var(--gold2);}
 
-.select-list{display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto;padding-right:4px;}
-.select-list-grouped{max-height:240px;}
-.select-group-label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:0.5px;margin:8px 0 4px;padding-left:4px;}
-.select-group-label:first-child{margin-top:0;}
-.select-item{padding:11px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text1);font-size:13px;font-weight:600;text-align:left;}
-.select-item.selected{background:var(--gold);border-color:var(--gold2);color:#0c0a09;}
-.product-select-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;max-height:200px;overflow-y:auto;}
-.product-select-item{padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text1);font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;}
-.product-select-item.selected{background:var(--gold);border-color:var(--gold2);color:#0c0a09;}
-.product-select-item .pemoji{font-size:24px;}
+.empty{background:var(--surface);border-radius:14px;padding:48px 20px;
+  text-align:center;border:1px solid var(--border);}
+.empty-icon{font-size:40px;margin-bottom:10px;opacity:0.5;}
+.empty-text{font-size:13px;color:var(--text3);}
 
-/* Toast */
-.toast{position:fixed;top:calc(env(safe-area-inset-top) + 16px);left:50%;transform:translateX(-50%) translateY(-200px);background:var(--surface);color:#fff;padding:12px 22px;border-radius:12px;font-size:13px;font-weight:600;border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:200;transition:transform 0.3s;max-width:calc(100% - 32px);text-align:center;}
+.toast{position:fixed;top:calc(env(safe-area-inset-top)+16px);left:50%;
+  transform:translateX(-50%) translateY(-200px);background:var(--surface);
+  color:#fff;padding:12px 22px;border-radius:12px;font-size:13px;font-weight:600;
+  border:1px solid var(--border);z-index:200;transition:transform 0.3s;
+  max-width:calc(100% - 32px);text-align:center;white-space:pre-wrap;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .toast.error{background:#7f1d1d;border-color:#dc2626;}
 .toast.success{background:#064e3b;border-color:#10b981;}
 
-@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-@keyframes slideUp{from{transform:translateY(30px);}to{transform:translateY(0);}}
-
-.loading{display:flex;align-items:center;justify-content:center;min-height:100vh;color:var(--text2);font-size:14px;}
-.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
+.loading{display:flex;align-items:center;justify-content:center;min-height:60vh;}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--gold);
+  border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-.gift-history{display:flex;flex-direction:column;gap:6px;}
-.gift-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;}
-.gift-emoji{font-size:22px;}
-.gift-info{flex:1;}
-.gift-title{font-size:13px;font-weight:700;}
-.gift-meta{font-size:11px;color:var(--text3);}
+.student-row{background:var(--surface);border-radius:12px;border:1px solid var(--border);margin-bottom:8px;overflow:hidden;}
+.student-row-head{padding:12px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+.student-row-body{background:var(--bg2);padding:10px 14px;border-top:1px solid var(--border);display:none;}
+.student-row-body.open{display:block;}
+.coupon-use-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+.coupon-use-row:last-child{border-bottom:none;}
+.btn-use{background:rgba(16,185,129,0.15);color:var(--success);border:none;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;}
+
+.resell-item{background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:12px;margin-bottom:8px;}
+.btn-cancel-resell{background:rgba(239,68,68,0.15);color:var(--danger);border:none;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;}
+
+.give-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px;margin-bottom:16px;}
+.give-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:8px 4px;color:var(--text1);font-size:12px;font-weight:600;text-align:center;}
+.give-btn.selected{background:rgba(245,158,11,0.2);border-color:var(--gold2);color:var(--gold2);}
+.give-product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:6px;margin-bottom:16px;}
+.give-product-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:10px 4px;text-align:center;}
+.give-product-btn.selected{background:rgba(245,158,11,0.2);border-color:var(--gold2);}
+.give-action-btn{width:100%;padding:14px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;}
+
+.search-input{width:100%;padding:11px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text1);font-size:13px;outline:none;margin-bottom:12px;}
 </style>
 </head>
 <body>
@@ -181,11 +139,11 @@ input{font-family:inherit;}
 <div class="modal-overlay" id="main-modal">
   <div class="modal-panel" id="modal-inner"></div>
 </div>
-<div class="toast" id="toast"></div>
+<div id="toast" class="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, runTransaction, update, get, set, remove }
+import { getDatabase, ref, onValue, runTransaction, update, set, remove }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const FB = {
@@ -197,25 +155,23 @@ const FB = {
   messagingSenderId:"1082843629086",
   appId:"1:1082843629086:web:58c6b2ca396cb7842d100f"
 };
-const db = getDatabase(initializeApp(FB));
 
 const GROUPS = [
-  {id:1,name:'1모둠',members:['주시연','김지성','신재은','서은수']},
-  {id:2,name:'2모둠',members:['강민채','권용민','이다영','김준우']},
-  {id:3,name:'3모둠',members:['박준서','조혜원','김주이','윤지환']},
-  {id:4,name:'4모둠',members:['최효민','정서윤','이세은','이강민']},
-  {id:5,name:'5모둠',members:['김지원','임승언','이서준','김수현','이윤아']},
-  {id:6,name:'6모둠',members:['이주호','민나진','최상윤','황세현','이수빈']},
+  {id:1,members:['주시연','김지성','신재은','서은수']},
+  {id:2,members:['강민채','권용민','이다영','김준우']},
+  {id:3,members:['박준서','조혜원','김주이','윤지환']},
+  {id:4,members:['최효민','정서윤','이세은','이강민']},
+  {id:5,members:['김지원','임승언','이서준','김수현','이윤아']},
+  {id:6,members:['이주호','민나진','최상윤','황세현','이수빈']},
 ];
 const ALL_STUDENTS = GROUPS.flatMap(g=>g.members.map(m=>({name:m,group:g.id})));
-const groupOf = name => ALL_STUDENTS.find(s=>s.name===name)?.group;
+const fmt = n => Number(n||0).toLocaleString('ko-KR');
+const db = getDatabase(initializeApp(FB));
 
 let activeTab = 'products';
 let fbState = null;
 let searchQuery = '';
-let expandedStudent = null;
-
-const fmt = n => Number(n||0).toLocaleString('ko-KR');
+let selEmoji = '🎁';
 
 const $app = document.getElementById('app');
 const $modal = document.getElementById('main-modal');
@@ -224,8 +180,8 @@ const $toast = document.getElementById('toast');
 
 function showToast(msg, type=''){
   $toast.textContent = msg;
-  $toast.className = 'toast show ' + type;
-  setTimeout(()=>$toast.classList.remove('show'), 2400);
+  $toast.className = `toast ${type} show`;
+  setTimeout(()=>$toast.classList.remove('show'), 2500);
 }
 function showModal(html){ $modalInner.innerHTML = html; $modal.classList.add('show'); }
 function closeModal(){ $modal.classList.remove('show'); }
@@ -234,7 +190,7 @@ $modal.addEventListener('click', e=>{ if(e.target===$modal) closeModal(); });
 onValue(ref(db,'state'), snap=>{
   fbState = snap.val() || {};
   if(!fbState.students) fbState.students = {};
-  if(!fbState.couponShop) fbState.couponShop = { products:{}, resell:{} };
+  if(!fbState.couponShop) fbState.couponShop = {};
   if(!fbState.couponShop.products) fbState.couponShop.products = {};
   if(!fbState.couponShop.resell) fbState.couponShop.resell = {};
   render();
@@ -242,57 +198,30 @@ onValue(ref(db,'state'), snap=>{
 
 function render(){
   if(!fbState){
-    $app.innerHTML = `<div class="loading"><div style="text-align:center"><div class="spinner"></div>가나디 서버 연결 중...</div></div>`;
+    $app.innerHTML = `<div class="loading"><div><div class="spinner"></div>연결 중...</div></div>`;
     return;
   }
-
-  const products = Object.entries(fbState.couponShop.products||{});
-  const resell = Object.entries(fbState.couponShop.resell||{});
-  let totalCoupons = 0;
-  Object.values(fbState.students||{}).forEach(s=>{
-    if(s.coupons) totalCoupons += Object.keys(s.coupons).length;
-  });
+  const pCount = Object.keys(fbState.couponShop.products||{}).length;
+  const rCount = Object.keys(fbState.couponShop.resell||{}).length;
+  let cCount = 0;
+  Object.values(fbState.students||{}).forEach(s=>{ if(s.coupons) cCount+=Object.keys(s.coupons).length; });
 
   $app.innerHTML = `
     <div class="header">
-      <div class="header-left">
-        <div class="logo">관리</div>
-        <div>
-          <div class="brand-sub">ADMIN PANEL</div>
-          <div class="brand-name">가나디 쿠폰샵</div>
-        </div>
-      </div>
-      <div class="admin-badge">관리자 모드</div>
-    </div>
-
-    <div class="stats-section">
-      <div class="stats-card">
-        <div class="stats-title">📊 현황 대시보드</div>
-        <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-value">${products.length}<span>개</span></div>
-            <div class="stat-label">등록 상품</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">${totalCoupons}<span>장</span></div>
-            <div class="stat-label">발급 쿠폰</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">${resell.length}<span>개</span></div>
-            <div class="stat-label">리셀 등록</div>
-          </div>
-        </div>
+      <div class="brand-name">🍀 가나디쿠폰샵 관리자</div>
+      <div class="header-stats">
+        <div class="stat"><div class="stat-label">상품</div><div class="stat-value">${pCount}</div></div>
+        <div class="stat"><div class="stat-label">쿠폰</div><div class="stat-value">${cCount}</div></div>
+        <div class="stat"><div class="stat-label">리셀</div><div class="stat-value">${rCount}</div></div>
       </div>
     </div>
-
     <div class="content" id="tab-content"></div>
-
     <div class="tabbar">
       <button class="tab ${activeTab==='products'?'active':''}" data-tab="products">
         <div class="tab-icon">📦</div><div class="tab-label">상품관리</div>
       </button>
       <button class="tab ${activeTab==='give'?'active':''}" data-tab="give">
-        <div class="tab-icon">🎁</div><div class="tab-label">쿠폰지급</div>
+        <div class="tab-icon">🎟️</div><div class="tab-label">쿠폰지급</div>
       </button>
       <button class="tab ${activeTab==='students'?'active':''}" data-tab="students">
         <div class="tab-icon">👥</div><div class="tab-label">학생현황</div>
@@ -302,64 +231,62 @@ function render(){
       </button>
     </div>
   `;
-
   $app.querySelectorAll('.tab').forEach(t=>{
     t.addEventListener('click', ()=>{ activeTab = t.dataset.tab; render(); });
   });
-
   renderTabContent();
 }
 
 function renderTabContent(){
   const $c = document.getElementById('tab-content');
+  if(!$c) return;
   if(activeTab==='products') renderProducts($c);
   else if(activeTab==='give') renderGive($c);
-  else if(activeTab==='students') renderStudentList();
+  else if(activeTab==='students') renderStudents($c);
   else if(activeTab==='resell') renderResell($c);
 }
 
 function renderProducts($c){
   const products = Object.entries(fbState.couponShop.products||{})
-    .map(([id,p])=>({id,...p}))
-    .filter(p=>p && p.name)
+    .map(([id,p])=>({id,...p})).filter(p=>p&&p.name)
     .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
 
-  $c.innerHTML = `
-    <div class="section-head">
-      <h2 class="section-title">상품 관리</h2>
-      <button class="btn-add" id="btn-add-product">＋ 상품 등록</button>
-    </div>
-    ${products.length===0
-      ? `<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">등록된 상품이 없습니다</div></div>`
-      : `<div class="list">${products.map(p=>`
-          <div class="item">
-            <div class="item-img">${p.image||'🎁'}</div>
-            <div class="item-info">
-              <div class="item-name">${p.name}</div>
-              <div class="item-meta">${fmt(p.price)}점<span>·</span>재고 ${p.stock||0}개</div>
-            </div>
-            <button class="item-action edit" data-edit-product="${p.id}" title="수정">✏️</button>
-            <button class="item-action" data-delete-product="${p.id}" title="삭제">🗑️</button>
-          </div>
-        `).join('')}</div>`}
-  `;
+  let html = `<div class="section-head">
+    <h2 class="section-title">상품 관리</h2>
+    <button class="btn-add" id="btn-add-product">＋ 상품 등록</button>
+  </div>`;
+  if(products.length===0){
+    html += `<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">등록된 상품이 없습니다</div></div>`;
+  } else {
+    html += `<div class="list">`;
+    products.forEach(p=>{
+      html += `<div class="item">
+        <div class="item-img">${p.image||'🎁'}</div>
+        <div class="item-info">
+          <div class="item-name">${p.name}</div>
+          <div class="item-meta">${fmt(p.price)}점 · 재고 ${p.stock||0}개</div>
+        </div>
+        <button class="item-action edit" data-edit="${p.id}">✏️</button>
+        <button class="item-action del" data-del="${p.id}">🗑️</button>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  $c.innerHTML = html;
 
-  document.getElementById('btn-add-product').onclick = openAddProductModal;
-  $c.querySelectorAll('[data-edit-product]').forEach(b=>{
+  document.getElementById('btn-add-product').addEventListener('click', openAddProductModal);
+  $c.querySelectorAll('[data-edit]').forEach(b=>{
     b.addEventListener('click', ()=>{
-      const id = b.dataset.editProduct;
-      const p = products.find(x=>x.id===id);
+      const p = products.find(x=>x.id===b.dataset.edit);
       if(p) openEditProductModal(p);
     });
   });
-  $c.querySelectorAll('[data-delete-product]').forEach(b=>{
+  $c.querySelectorAll('[data-del]').forEach(b=>{
     b.addEventListener('click', ()=>{
-      const id = b.dataset.deleteProduct;
-      const p = products.find(x=>x.id===id);
+      const p = products.find(x=>x.id===b.dataset.del);
       if(p) confirmDeleteProduct(p);
     });
   });
-
 }
 
 function openAddProductModal(){
@@ -369,42 +296,41 @@ function openAddProductModal(){
     <div class="modal-handle"></div>
     <h3 class="modal-title">상품 등록</h3>
     <div class="field">
-      <label class="field-label">상품 아이콘</label>
-      <div class="emoji-grid" id="emoji-grid">
-        ${emojis.map(e=>`<button class="emoji-btn ${e===selEmoji?'selected':''}" data-emoji="${e}">${e}</button>`).join('')}
+      <label class="field-label">아이콘</label>
+      <div class="emoji-grid" id="egrid">
+        ${emojis.map(e=>`<button class="emoji-btn${e===selEmoji?' selected':''}" data-e="${e}">${e}</button>`).join('')}
       </div>
     </div>
     <div class="field">
       <label class="field-label">상품명</label>
-      <input type="text" class="field-input" id="p-name" placeholder="예: 숙제 면제권">
+      <input class="field-input" id="pname" placeholder="예: 숙제 면제권">
     </div>
     <div class="field">
       <label class="field-label">가격 (점)</label>
-      <input type="number" class="field-input" id="p-price" placeholder="예: 5000" inputmode="numeric">
+      <input class="field-input" id="pprice" type="number" inputmode="numeric" placeholder="예: 5000">
     </div>
     <div class="field">
       <label class="field-label">재고 수량</label>
-      <input type="number" class="field-input" id="p-stock" placeholder="예: 10" inputmode="numeric">
+      <input class="field-input" id="pstock" type="number" inputmode="numeric" placeholder="예: 10">
     </div>
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
-      <button class="modal-btn modal-btn-confirm" id="m-confirm">등록하기</button>
+      <button class="modal-btn modal-btn-cancel" id="mc">취소</button>
+      <button class="modal-btn modal-btn-confirm" id="mok">등록하기</button>
     </div>
   `);
-  document.querySelectorAll('#emoji-grid .emoji-btn').forEach(b=>{
-    b.onclick = ()=>{
-      selEmoji = b.dataset.emoji;
-      document.querySelectorAll('#emoji-grid .emoji-btn').forEach(x=>x.classList.toggle('selected', x.dataset.emoji===selEmoji));
-    };
+  document.querySelectorAll('#egrid .emoji-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      selEmoji = b.dataset.e;
+      document.querySelectorAll('#egrid .emoji-btn').forEach(x=>x.classList.toggle('selected', x.dataset.e===selEmoji));
+    });
   });
-  document.getElementById('m-cancel').onclick = closeModal;
-  document.getElementById('m-confirm').onclick = async ()=>{
-    const name = document.getElementById('p-name').value.trim();
-    const price = parseInt(document.getElementById('p-price').value);
-    const stock = parseInt(document.getElementById('p-stock').value);
-    if(!name || !price || price<=0 || isNaN(stock) || stock<0){
-      showToast('모든 항목을 올바르게 입력해주세요','error');
-      return;
+  document.getElementById('mc').addEventListener('click', closeModal);
+  document.getElementById('mok').addEventListener('click', async ()=>{
+    const name = document.getElementById('pname').value.trim();
+    const price = parseInt(document.getElementById('pprice').value);
+    const stock = parseInt(document.getElementById('pstock').value);
+    if(!name||isNaN(price)||price<=0||isNaN(stock)||stock<0){
+      showToast('모든 항목을 올바르게 입력해주세요','error'); return;
     }
     closeModal();
     try {
@@ -413,371 +339,191 @@ function openAddProductModal(){
         name, price, stock, image:selEmoji, createdAt:Date.now()
       });
       showToast('상품이 등록되었습니다','success');
-      render();
-    } catch(e){
-      console.error(e);
-      showToast('등록 중 오류 발생','error');
-    }
-  };
+    } catch(e){ showToast('오류가 발생했습니다','error'); }
+  });
 }
 
 function openEditProductModal(p){
-  selEmoji = p.image || '🎁';
+  selEmoji = p.image||'🎁';
   const emojis = ['🎁','📚','🍪','🍭','🪑','🎵','🎮','⚽','🏆','✏️','🎨','🍰','☕','🎟️','⭐','💎'];
   showModal(`
     <div class="modal-handle"></div>
     <h3 class="modal-title">상품 수정</h3>
     <div class="field">
-      <label class="field-label">상품 아이콘</label>
-      <div class="emoji-grid" id="emoji-grid">
-        ${emojis.map(e=>`<button class="emoji-btn ${e===selEmoji?'selected':''}" data-emoji="${e}">${e}</button>`).join('')}
+      <label class="field-label">아이콘</label>
+      <div class="emoji-grid" id="egrid">
+        ${emojis.map(e=>`<button class="emoji-btn${e===selEmoji?' selected':''}" data-e="${e}">${e}</button>`).join('')}
       </div>
     </div>
     <div class="field">
       <label class="field-label">상품명</label>
-      <input type="text" class="field-input" id="p-name" placeholder="예: 숙제 면제권" value="${p.name}">
+      <input class="field-input" id="pname" value="${p.name}">
     </div>
     <div class="field">
       <label class="field-label">가격 (점)</label>
-      <input type="number" class="field-input" id="p-price" placeholder="예: 5000" inputmode="numeric" value="${p.price}">
+      <input class="field-input" id="pprice" type="number" inputmode="numeric" value="${p.price}">
     </div>
     <div class="field">
       <label class="field-label">재고 수량</label>
-      <input type="number" class="field-input" id="p-stock" placeholder="예: 10" inputmode="numeric" value="${p.stock||0}">
+      <input class="field-input" id="pstock" type="number" inputmode="numeric" value="${p.stock||0}">
     </div>
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
-      <button class="modal-btn modal-btn-confirm" id="m-confirm">수정하기</button>
+      <button class="modal-btn modal-btn-cancel" id="mc">취소</button>
+      <button class="modal-btn modal-btn-confirm" id="mok">수정하기</button>
     </div>
   `);
-  document.querySelectorAll('#emoji-grid .emoji-btn').forEach(b=>{
-    b.onclick = ()=>{
-      selEmoji = b.dataset.emoji;
-      document.querySelectorAll('#emoji-grid .emoji-btn').forEach(x=>x.classList.toggle('selected', x.dataset.emoji===selEmoji));
-    };
+  document.querySelectorAll('#egrid .emoji-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      selEmoji = b.dataset.e;
+      document.querySelectorAll('#egrid .emoji-btn').forEach(x=>x.classList.toggle('selected', x.dataset.e===selEmoji));
+    });
   });
-  document.getElementById('m-cancel').onclick = closeModal;
-  document.getElementById('m-confirm').onclick = async ()=>{
-    const name = document.getElementById('p-name').value.trim();
-    const price = parseInt(document.getElementById('p-price').value);
-    const stock = parseInt(document.getElementById('p-stock').value);
-    if(!name || !price || price<=0 || isNaN(stock) || stock<0){
-      showToast('모든 항목을 올바르게 입력해주세요','error');
-      return;
+  document.getElementById('mc').addEventListener('click', closeModal);
+  document.getElementById('mok').addEventListener('click', async ()=>{
+    const name = document.getElementById('pname').value.trim();
+    const price = parseInt(document.getElementById('pprice').value);
+    const stock = parseInt(document.getElementById('pstock').value);
+    if(!name||isNaN(price)||price<=0||isNaN(stock)||stock<0){
+      showToast('모든 항목을 올바르게 입력해주세요','error'); return;
     }
     closeModal();
     try {
-      await update(ref(db,`state/couponShop/products/${p.id}`),{
-        name, price, stock, image:selEmoji
-      });
+      await update(ref(db,`state/couponShop/products/${p.id}`),{name,price,stock,image:selEmoji});
       showToast('상품이 수정되었습니다','success');
-      render();
-    } catch(e){
-      console.error(e);
-      showToast('수정 중 오류 발생','error');
-    }
-  };
+    } catch(e){ showToast('오류가 발생했습니다','error'); }
+  });
 }
 
 function confirmDeleteProduct(p){
   showModal(`
     <div class="modal-handle"></div>
     <h3 class="modal-title">상품 삭제</h3>
-    <p class="modal-text">${p.name}을(를) 삭제하시겠습니까?\n이미 발급된 쿠폰에는 영향이 없습니다.</p>
+    <p class="modal-text">${p.name}을(를) 삭제하시겠습니까?</p>
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
-      <button class="modal-btn modal-btn-danger" id="m-confirm">삭제</button>
+      <button class="modal-btn modal-btn-cancel" id="mc">취소</button>
+      <button class="modal-btn modal-btn-danger" id="mok">삭제</button>
     </div>
   `);
-  document.getElementById('m-cancel').onclick = closeModal;
-  document.getElementById('m-confirm').onclick = async ()=>{
+  document.getElementById('mc').addEventListener('click', closeModal);
+  document.getElementById('mok').addEventListener('click', async ()=>{
     closeModal();
     try {
       await remove(ref(db,`state/couponShop/products/${p.id}`));
       showToast('상품이 삭제되었습니다','success');
-    } catch(e){
-      console.error(e);
-      showToast('삭제 중 오류 발생','error');
-    }
-  };
-}
-
-let giveTarget = null;
-let giveProduct = null;
-function openGiveCouponModal(){
-  giveTarget = null;
-  giveProduct = null;
-  const products = Object.entries(fbState.couponShop.products||{})
-    .map(([id,p])=>({id,...p}))
-    .filter(p=>p && p.name);
-
-  showModal(`
-    <div class="modal-handle"></div>
-    <h3 class="modal-title">쿠폰 지급</h3>
-    <div class="field">
-      <label class="field-label">대상 학생 선택</label>
-      <div class="select-list select-list-grouped" id="student-select">
-        ${GROUPS.map(g=>`
-          <div class="select-group-label">${g.name}</div>
-          ${g.members.map(m=>`<button class="select-item" data-student="${m}">${m}</button>`).join('')}
-        `).join('')}
-      </div>
-    </div>
-    <div class="field">
-      <label class="field-label">지급할 상품 선택</label>
-      ${products.length===0
-        ? `<div class="empty-mini">먼저 상품을 등록해주세요</div>`
-        : `<div class="product-select-grid" id="product-select">
-            ${products.map(p=>`
-              <button class="product-select-item" data-product="${p.id}">
-                <div class="pemoji">${p.image||'🎁'}</div>
-                <div>${p.name}</div>
-              </button>
-            `).join('')}
-          </div>`}
-    </div>
-    <div class="modal-actions">
-      <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
-      <button class="modal-btn modal-btn-confirm" id="m-confirm">지급하기</button>
-    </div>
-  `);
-
-  document.querySelectorAll('#student-select [data-student]').forEach(b=>{
-    b.onclick = ()=>{
-      giveTarget = b.dataset.student;
-      document.querySelectorAll('#student-select [data-student]').forEach(x=>x.classList.toggle('selected', x.dataset.student===giveTarget));
-    };
+    } catch(e){ showToast('오류가 발생했습니다','error'); }
   });
-  document.querySelectorAll('#product-select [data-product]').forEach(b=>{
-    b.onclick = ()=>{
-      const pid = b.dataset.product;
-      giveProduct = products.find(x=>x.id===pid);
-      document.querySelectorAll('#product-select [data-product]').forEach(x=>x.classList.toggle('selected', x.dataset.product===pid));
-    };
-  });
-  document.getElementById('m-cancel').onclick = closeModal;
-  document.getElementById('m-confirm').onclick = async ()=>{
-    if(!giveTarget){ showToast('학생을 선택해주세요','error'); return; }
-    if(!giveProduct){ showToast('상품을 선택해주세요','error'); return; }
-    closeModal();
-    try {
-      await runTransaction(ref(db,`state/students/${giveTarget}`), cur=>{
-        if(!cur) cur = { deposit:0 };
-        if(!cur.coupons) cur.coupons = {};
-        const cid = 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
-        cur.coupons[cid] = {
-          name:giveProduct.name,
-          image:giveProduct.image,
-          originalPrice:giveProduct.price,
-          productId:giveProduct.id,
-          acquiredAt:Date.now(),
-          gifted:true,
-          expiresAt:Date.now() + 7*24*3600*1000
-        };
-        return cur;
-      });
-      showToast(`${giveTarget}님께 ${giveProduct.name} 지급 완료`,'success');
-    } catch(e){
-      console.error(e);
-      showToast('지급 중 오류 발생','error');
-    }
-  };
-}
-
-function confirmCancelResell(item){
-  showModal(`
-    <div class="modal-handle"></div>
-    <h3 class="modal-title">리셀 등록 취소</h3>
-    <p class="modal-text">${item.name}의 리셀 등록을 취소하시겠습니까?\n쿠폰은 ${item.sellerName}님께 반환됩니다.</p>
-    <div class="modal-actions">
-      <button class="modal-btn modal-btn-cancel" id="m-cancel">아니오</button>
-      <button class="modal-btn modal-btn-danger" id="m-confirm">취소하기</button>
-    </div>
-  `);
-  document.getElementById('m-cancel').onclick = closeModal;
-  document.getElementById('m-confirm').onclick = async ()=>{
-    closeModal();
-    try {
-      await remove(ref(db,`state/couponShop/resell/${item.id}`));
-      await runTransaction(ref(db,`state/students/${item.sellerName}`), cur=>{
-        if(!cur) cur = { deposit:0 };
-        if(!cur.coupons) cur.coupons = {};
-        const cid = 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
-        cur.coupons[cid] = {
-          name:item.name,
-          image:item.image,
-          originalPrice:item.price,
-          productId:item.productId||'',
-          acquiredAt:Date.now(),
-          expiresAt:Date.now() + 7*24*3600*1000
-        };
-        return cur;
-      });
-      showToast('리셀 등록이 취소되었습니다','success');
-    } catch(e){
-      console.error(e);
-      showToast('오류가 발생했습니다','error');
-    }
-  };
 }
 
 function renderGive($c){
   const products = Object.entries(fbState.couponShop.products||{})
-    .map(([id,p])=>({id,...p}))
-    .filter(p=>p && p.name);
+    .map(([id,p])=>({id,...p})).filter(p=>p&&p.name);
+  let giveTarget=null, giveProduct=null;
 
   $c.innerHTML = `
-    <div class="section-head">
-      <h2 class="section-title">쿠폰 지급</h2>
-    </div>
+    <div class="section-head"><h2 class="section-title">쿠폰 지급</h2></div>
     <div class="field">
       <label class="field-label">학생 선택</label>
-      <div id="student-select" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;">
-        ${ALL_STUDENTS.map(s=>`<button class="student-btn" data-student="${s.name}" style="padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text1);cursor:pointer;">${s.name}</button>`).join('')}
+      <div class="give-grid" id="sGrid">
+        ${ALL_STUDENTS.map(s=>`<button class="give-btn" data-s="${s.name}">${s.name}</button>`).join('')}
       </div>
     </div>
     <div class="field">
       <label class="field-label">상품 선택</label>
-      <div id="product-select" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:8px;">
-        ${products.map(p=>`<button class="product-btn" data-product="${p.id}" style="padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;text-align:center;"><div style="font-size:20px;">${p.image||'🎁'}</div><div style="font-size:9px;margin-top:4px;color:var(--text3);">${p.name}</div></button>`).join('')}
+      <div class="give-product-grid" id="pGrid">
+        ${products.map(p=>`<button class="give-product-btn" data-p="${p.id}">
+          <div style="font-size:22px;">${p.image||'🎁'}</div>
+          <div style="font-size:10px;margin-top:4px;color:var(--text2);">${p.name}</div>
+        </button>`).join('')}
       </div>
     </div>
-    <button id="btn-give" style="width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;margin-top:16px;">지급하기</button>
+    <button class="give-action-btn" id="giveBtn">지급하기</button>
   `;
-  
-  let giveTarget = null, giveProduct = null;
-  
-  document.querySelectorAll('#student-select [data-student]').forEach(b=>{
-    b.onclick = ()=>{
-      giveTarget = b.dataset.student;
-      document.querySelectorAll('#student-select [data-student]').forEach(x=>x.style.background = x.dataset.student===giveTarget ? 'var(--gold)' : 'var(--surface)');
-    };
+
+  $c.querySelectorAll('#sGrid [data-s]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      giveTarget = b.dataset.s;
+      $c.querySelectorAll('#sGrid [data-s]').forEach(x=>x.classList.toggle('selected', x.dataset.s===giveTarget));
+    });
   });
-  
-  document.querySelectorAll('#product-select [data-product]').forEach(b=>{
-    b.onclick = ()=>{
-      giveProduct = products.find(x=>x.id===b.dataset.product);
-      document.querySelectorAll('#product-select [data-product]').forEach(x=>x.style.background = x.dataset.product===b.dataset.product ? 'var(--gold)' : 'var(--surface)');
-    };
+  $c.querySelectorAll('#pGrid [data-p]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      giveProduct = products.find(x=>x.id===b.dataset.p);
+      $c.querySelectorAll('#pGrid [data-p]').forEach(x=>x.classList.toggle('selected', x.dataset.p===b.dataset.p));
+    });
   });
-  
-  document.getElementById('btn-give').onclick = async ()=>{
-    if(!giveTarget || !giveProduct){ showToast('학생과 상품을 모두 선택해주세요','error'); return; }
+  document.getElementById('giveBtn').addEventListener('click', async ()=>{
+    if(!giveTarget||!giveProduct){ showToast('학생과 상품을 선택해주세요','error'); return; }
     try {
       await runTransaction(ref(db,`state/students/${giveTarget}`), cur=>{
-        if(!cur) cur = { deposit:0 };
-        if(!cur.coupons) cur.coupons = {};
-        const cid = 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
-        cur.coupons[cid] = {
-          name:giveProduct.name,
-          image:giveProduct.image,
-          originalPrice:giveProduct.price,
-          productId:giveProduct.id,
-          acquiredAt:Date.now(),
-          gifted:true,
-          expiresAt:Date.now() + 7*24*3600*1000
+        if(!cur) cur={deposit:0};
+        if(!cur.coupons) cur.coupons={};
+        const cid='c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+        cur.coupons[cid]={
+          name:giveProduct.name, image:giveProduct.image,
+          originalPrice:giveProduct.price, productId:giveProduct.id,
+          acquiredAt:Date.now(), gifted:true,
+          expiresAt:Date.now()+7*24*3600*1000
         };
         return cur;
       });
       showToast(`${giveTarget}님께 ${giveProduct.name} 지급 완료`,'success');
-      giveTarget = null; giveProduct = null;
+      giveTarget=null; giveProduct=null;
       renderGive($c);
-    } catch(e){
-      console.error(e);
-      showToast('지급 중 오류 발생','error');
-    }
-  };
+    } catch(e){ showToast('오류가 발생했습니다','error'); }
+  });
 }
 
-function renderStudentList(){
-  const $list = document.getElementById('tab-content');
-  const filtered = ALL_STUDENTS.filter(s=>s.name.includes(searchQuery));
-
-  $list.innerHTML = `
-    <div style="margin-bottom:16px;">
-      <input type="text" id="search-input" placeholder="학생명 검색" style="width:100%;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text1);">
-    </div>
-    <div id="student-list"></div>
+function renderStudents($c){
+  $c.innerHTML = `
+    <input class="search-input" id="searchInput" placeholder="🔍 학생명 검색" value="${searchQuery}">
+    <div id="sList"></div>
   `;
-  
-  const $studentList = document.getElementById('student-list');
-  $studentList.innerHTML = filtered.map(s=>{
-    const sd = fbState.students?.[s.name] || {};
-    const deposit = sd.deposit ?? 0;
-    const coupons = Object.entries(sd.coupons||{}).map(([id,c])=>({id,...c}));
-    const couponCount = coupons.length;
-    return `
-      <div class="student-card" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" data-toggle="${s.name}">
-          <div><strong>${s.name}</strong> <span style="color:var(--text3);font-size:12px;">${s.group}모둠</span></div>
+  document.getElementById('searchInput').addEventListener('input', e=>{
+    searchQuery = e.target.value;
+    buildList();
+  });
+  buildList();
+
+  function buildList(){
+    const filtered = ALL_STUDENTS.filter(s=>s.name.includes(searchQuery));
+    let h = '';
+    filtered.forEach(s=>{
+      const sd = fbState.students?.[s.name]||{};
+      const deposit = sd.deposit??0;
+      const coupons = Object.entries(sd.coupons||{}).map(([id,c])=>({id,...c}));
+      h += `<div class="student-row">
+        <div class="student-row-head" data-name="${s.name}">
+          <div>
+            <strong>${s.name}</strong>
+            <span style="font-size:11px;color:var(--text3);margin-left:6px;">${s.group}모둠</span>
+          </div>
           <div style="text-align:right;font-size:12px;color:var(--text3);">
             <div>예금 ${fmt(deposit)}점</div>
-            <div>쿠폰 ${couponCount}장</div>
+            <div style="color:var(--gold2);">쿠폰 ${coupons.length}장</div>
           </div>
         </div>
-        <div class="student-detail" style="margin-top:12px;display:none;">
-          ${couponCount===0 ? '<div style="color:var(--text3);font-size:12px;">보유한 쿠폰이 없습니다</div>' : coupons.map(c=>`
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--border);">
-              <div><span style="font-size:14px;margin-right:8px;">${c.image||'🎁'}</span>${c.name}</div>
-              <button class="btn-coupon-use" data-use="${c.id}" data-student="${s.name}" style="padding:4px 8px;background:rgba(16,185,129,0.15);color:#10b981;border:none;border-radius:4px;font-size:11px;cursor:pointer;">사용</button>
-            </div>
-          `).join('')}
+        <div class="student-row-body" id="body_${s.name}">
+          ${coupons.length===0
+            ? '<div style="color:var(--text3);font-size:12px;padding:4px 0;">보유한 쿠폰이 없습니다</div>'
+            : coupons.map(c=>`
+              <div class="coupon-use-row">
+                <div><span style="margin-right:6px;">${c.image||'🎁'}</span>${c.name}</div>
+                <button class="btn-use" data-use="${c.id}" data-who="${s.name}">사용</button>
+              </div>`).join('')}
         </div>
-      </div>
-    `;
-  }).join('');
-  
-  $list.querySelectorAll('[data-toggle]').forEach(h=>{
-    h.addEventListener('click', ()=>{
-      const detail = h.nextElementSibling;
-      detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+      </div>`;
     });
-  });
-  
-  $list.querySelectorAll('[data-use]').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      const couponId = b.dataset.use;
-      const studentName = b.dataset.student;
-      confirmUseCoupon(studentName, couponId);
+    document.getElementById('sList').innerHTML = h;
+    document.querySelectorAll('.student-row-head').forEach(h=>{
+      h.addEventListener('click', ()=>{
+        const body = document.getElementById('body_'+h.dataset.name);
+        if(body) body.classList.toggle('open');
+      });
     });
-  });
-  
-  document.getElementById('search-input').addEventListener('input', (e)=>{
-    searchQuery = e.target.value;
-    renderStudentList();
-  });
-}
-
-function renderResell($c){
-  const items = Object.entries(fbState.couponShop.resell||{})
-    .map(([id,r])=>({id,...r}))
-    .filter(r=>r && r.name);
-
-  $c.innerHTML = `
-    <div class="section-head">
-      <h2 class="section-title">리셀샵 모니터링</h2>
-      <span class="section-count">${items.length}개 등록</span>
-    </div>
-    ${items.length===0 ? '<div class="empty" style="text-align:center;padding:32px;color:var(--text3);">등록된 상품이 없습니다</div>' : items.map(item=>`
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;">
-          <div><span style="font-size:16px;margin-right:8px;">${item.image||'🎁'}</span><strong>${item.name}</strong></div>
-          <button class="btn-cancel-resell" data-id="${item.id}" style="padding:4px 8px;background:rgba(239,68,68,0.15);color:#ef4444;border:none;border-radius:4px;font-size:11px;cursor:pointer;">취소</button>
-        </div>
-        <div style="font-size:12px;color:var(--text3);margin-top:8px;">
-          <div>판매자: ${item.sellerName}</div>
-          <div>가격: ${fmt(item.price)}점</div>
-        </div>
-      </div>
-    `).join('')}
-  `;
-  
-  $c.querySelectorAll('[data-id]').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      const item = items.find(x=>x.id===b.dataset.id);
-      if(item) confirmCancelResell(item);
+    document.querySelectorAll('.btn-use').forEach(b=>{
+      b.addEventListener('click', ()=>confirmUseCoupon(b.dataset.who, b.dataset.use));
     });
-  });
+  }
 }
 
 function confirmUseCoupon(studentName, couponId){
@@ -786,24 +532,68 @@ function confirmUseCoupon(studentName, couponId){
     <h3 class="modal-title">쿠폰 사용</h3>
     <p class="modal-text">${studentName}님의 쿠폰을 사용 처리하시겠습니까?</p>
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-cancel" id="m-cancel">취소</button>
-      <button class="modal-btn modal-btn-danger" id="m-confirm">사용 처리</button>
+      <button class="modal-btn modal-btn-cancel" id="mc">취소</button>
+      <button class="modal-btn modal-btn-danger" id="mok">사용 처리</button>
     </div>
   `);
-  document.getElementById('m-cancel').onclick = closeModal;
-  document.getElementById('m-confirm').onclick = async ()=>{
+  document.getElementById('mc').addEventListener('click', closeModal);
+  document.getElementById('mok').addEventListener('click', async ()=>{
     closeModal();
     try {
       await remove(ref(db,`state/students/${studentName}/coupons/${couponId}`));
       showToast('쿠폰이 사용 처리되었습니다','success');
-      render();
-    } catch(e){
-      console.error(e);
-      showToast('오류가 발생했습니다','error');
-    }
-  };
+    } catch(e){ showToast('오류가 발생했습니다','error'); }
+  });
 }
 
+function renderResell($c){
+  const items = Object.entries(fbState.couponShop.resell||{})
+    .map(([id,r])=>({id,...r})).filter(r=>r&&r.name);
+  let html = `<div class="section-head">
+    <h2 class="section-title">리셀샵 모니터링</h2>
+    <span class="section-count">${items.length}개</span>
+  </div>`;
+  if(items.length===0){
+    html+=`<div class="empty"><div class="empty-icon">🔄</div><div class="empty-text">등록된 리셀 상품이 없습니다</div></div>`;
+  } else {
+    items.forEach(item=>{
+      html+=`<div class="resell-item">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><span style="font-size:18px;margin-right:8px;">${item.image||'🎁'}</span><strong>${item.name}</strong></div>
+          <button class="btn-cancel-resell" data-id="${item.id}">취소</button>
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-top:6px;">판매자: ${item.sellerName} · ${fmt(item.price)}점</div>
+      </div>`;
+    });
+  }
+  $c.innerHTML = html;
+  $c.querySelectorAll('[data-id]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const item = items.find(x=>x.id===b.dataset.id);
+      if(item) confirmCancelResell(item);
+    });
+  });
+}
+
+function confirmCancelResell(item){
+  showModal(`
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">리셀 취소</h3>
+    <p class="modal-text">${item.name} 리셀 등록을 취소하시겠습니까?</p>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" id="mc">취소</button>
+      <button class="modal-btn modal-btn-danger" id="mok">취소하기</button>
+    </div>
+  `);
+  document.getElementById('mc').addEventListener('click', closeModal);
+  document.getElementById('mok').addEventListener('click', async ()=>{
+    closeModal();
+    try {
+      await remove(ref(db,`state/couponShop/resell/${item.id}`));
+      showToast('리셀 등록이 취소되었습니다','success');
+    } catch(e){ showToast('오류가 발생했습니다','error'); }
+  });
+}
 
 render();
 </script>
